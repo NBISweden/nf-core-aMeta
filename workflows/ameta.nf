@@ -47,8 +47,8 @@ include { INPUT_CHECK } from '../subworkflows/local/input_check'
 // MODULE: Installed directly from nf-core/modules
 //
 // Bowtie subworkflow
-include { BOWTIE2_BUILD } from "$projectDir/modules/nf-core/bowtie2/build/main"
-include { BOWTIE2_ALIGN } from "$projectDir/modules/nf-core/bowtie2/align/main"
+include { BOWTIE2_BUILD       } from "$projectDir/modules/nf-core/bowtie2/build/main"
+include { FASTQ_ALIGN_BOWTIE2 } from "$projectDir/subworkflows/nf-core/fastq_align_bowtie2/main"
 
 // Authentic subworkflow
 include { MALTEXTRACT    } from "$projectDir/modules/nf-core/maltextract/main"
@@ -112,6 +112,22 @@ workflow AMETA {
         CUTADAPT.out.reads
     )
     ch_versions = ch_versions.mix(FASTQC_TRIM.out.versions.first())
+
+    //
+    // SUBWORKFLOW: ALIGN
+    //
+    ch_reference = Channel.fromPath( params.genome, checkIfExists: true)
+    BOWTIE2_BUILD( ch_reference.map{ file -> [ [ id: file.baseName ], file ] } )
+    ch_versions = ch_versions.mix(BOWTIE2_BUILD.out.versions.first())
+    FASTQ_ALIGN_BOWTIE2(
+        CUTADAPT.out.reads,                   // ch_reads
+        BOWTIE2_BUILD.out.index
+            .map{ meta, db -> db }.collect(), // ch_index
+        false,                                // save unaligned
+        false,                                // sort bam
+        ch_reference                          // ch_fasta
+    )
+    ch_versions = ch_versions.mix(FASTQ_ALIGN_BOWTIE2.out.versions.first())
 
     CUSTOM_DUMPSOFTWAREVERSIONS (
         ch_versions.unique().collectFile(name: 'collated_versions.yml')
