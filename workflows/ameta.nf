@@ -46,7 +46,29 @@ include { INPUT_CHECK } from '../subworkflows/local/input_check'
 //
 // MODULE: Installed directly from nf-core/modules
 //
+// Bowtie subworkflow
+include { BOWTIE2_BUILD } from "$projectDir/modules/nf-core/bowtie2/build/main"
+include { BOWTIE2_ALIGN } from "$projectDir/modules/nf-core/bowtie2/align/main"
+
+// Authentic subworkflow
+include { MALTEXTRACT    } from "$projectDir/modules/nf-core/maltextract/main"
+include { SAMTOOLS_FAIDX } from "$projectDir/modules/nf-core/samtools/faidx/main"
+// Lots of other custom stuff here
+
+// Damage subworkflow
+include { MAPDAMAGE2 } from "$projectDir/modules/nf-core/mapdamage2/main"
+
+// Krakenuniq subworkflow
+include { KRAKENUNIQ_PRELOADEDKRAKENUNIQ } from "$projectDir/modules/nf-core/krakenuniq/preloadedkrakenuniq/"
+include { KRONA_KTIMPORTTAXONOMY         } from "$projectDir/modules/nf-core/krona/ktimporttaxonomy/main"
+
+// Malt subworkflow
+include { MALT_BUILD } from "$projectDir/modules/nf-core/malt/build/main"
+include { MALT_RUN   } from "$projectDir/modules/nf-core/malt/run/main"
+
+// QC subworkflow
 include { FASTQC                      } from '../modules/nf-core/fastqc/main'
+include { CUTADAPT                    } from "$projectDir/modules/nf-core/cutadapt/main"
 include { MULTIQC                     } from '../modules/nf-core/multiqc/main'
 include { CUSTOM_DUMPSOFTWAREVERSIONS } from '../modules/nf-core/custom/dumpsoftwareversions/main'
 
