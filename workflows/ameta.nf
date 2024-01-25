@@ -67,7 +67,8 @@ include { MALT_BUILD } from "$projectDir/modules/nf-core/malt/build/main"
 include { MALT_RUN   } from "$projectDir/modules/nf-core/malt/run/main"
 
 // QC subworkflow
-include { FASTQC                      } from '../modules/nf-core/fastqc/main'
+include { FASTQC as FASTQC_RAW        } from '../modules/nf-core/fastqc/main'
+include { FASTQC as FASTQC_TRIM       } from '../modules/nf-core/fastqc/main'
 include { CUTADAPT                    } from "$projectDir/modules/nf-core/cutadapt/main"
 include { MULTIQC                     } from '../modules/nf-core/multiqc/main'
 include { CUSTOM_DUMPSOFTWAREVERSIONS } from '../modules/nf-core/custom/dumpsoftwareversions/main'
@@ -97,12 +98,20 @@ workflow AMETA {
     // ! There is currently no tooling to help you write a sample sheet schema
 
     //
-    // MODULE: Run FastQC
+    // SUBWORKFLOW: QC
     //
-    FASTQC (
+    FASTQC_RAW (
         INPUT_CHECK.out.reads
     )
-    ch_versions = ch_versions.mix(FASTQC.out.versions.first())
+    ch_versions = ch_versions.mix(FASTQC_RAW.out.versions.first())
+    CUTADAPT (
+        INPUT_CHECK.out.reads
+    )
+    ch_versions = ch_versions.mix(CUTADAPT.out.versions.first())
+    FASTQC_TRIM (
+        CUTADAPT.out.reads
+    )
+    ch_versions = ch_versions.mix(FASTQC_TRIM.out.versions.first())
 
     CUSTOM_DUMPSOFTWAREVERSIONS (
         ch_versions.unique().collectFile(name: 'collated_versions.yml')
@@ -118,6 +127,9 @@ workflow AMETA {
     ch_methods_description = Channel.value(methods_description)
 
     ch_multiqc_files = Channel.empty()
+    ch_multiqc_files = ch_multiqc_files.mix(FASTQC_RAW.out.zip.map { m, zip -> zip })
+    ch_multiqc_files = ch_multiqc_files.mix(CUTADAPT.out.log.map { m, log -> log })
+    ch_multiqc_files = ch_multiqc_files.mix(FASTQC_TRIM.out.zip.map { m, zip -> zip })
     ch_multiqc_files = ch_multiqc_files.mix(ch_workflow_summary.collectFile(name: 'workflow_summary_mqc.yaml'))
     ch_multiqc_files = ch_multiqc_files.mix(ch_methods_description.collectFile(name: 'methods_description_mqc.yaml'))
     ch_multiqc_files = ch_multiqc_files.mix(CUSTOM_DUMPSOFTWAREVERSIONS.out.mqc_yml.collect())
