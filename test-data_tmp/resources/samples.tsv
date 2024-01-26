@@ -1,0 +1,5 @@
+sample	fastq
+foo	data/foo.fq.gz
+bar	data/bar.fq.gz
+foobar	data/foobar.fq.gz
+barfoo	data/barfoo.fq.gz
