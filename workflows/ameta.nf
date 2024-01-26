@@ -116,7 +116,7 @@ workflow AMETA {
     //
     // SUBWORKFLOW: ALIGN
     //
-    ch_reference = Channel.fromPath( params.genome, checkIfExists: true)
+    ch_reference = Channel.fromPath( params.bowtie2_db, checkIfExists: true)
     BOWTIE2_BUILD( ch_reference.map{ file -> [ [ id: file.baseName ], file ] } )
     ch_versions = ch_versions.mix(BOWTIE2_BUILD.out.versions.first())
     FASTQ_ALIGN_BOWTIE2(

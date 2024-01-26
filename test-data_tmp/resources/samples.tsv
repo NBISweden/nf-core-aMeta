@@ -1,5 +1,5 @@
-sample	fastq
-foo	data/foo.fq.gz
-bar	data/bar.fq.gz
-foobar	data/foobar.fq.gz
-barfoo	data/barfoo.fq.gz
+sample  fastq
+foo test-data_tmp/data/foo.fq.gz
+bar test-data_tmp/data/bar.fq.gz
+foobar  test-data_tmp/data/foobar.fq.gz
+barfoo  test-data_tmp/data/barfoo.fq.gz
