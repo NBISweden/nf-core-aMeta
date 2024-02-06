@@ -60,6 +60,7 @@ include { MAPDAMAGE2 } from "$projectDir/modules/nf-core/mapdamage2/main"
 
 // Krakenuniq subworkflow
 include { KRAKENUNIQ_PRELOADEDKRAKENUNIQ } from "$projectDir/modules/nf-core/krakenuniq/preloadedkrakenuniq/"
+include { KRAKENUNIQ_BUILD               } from "$projectDir/modules/nf-core/krakenuniq/build/main"
 include { KRONA_KTIMPORTTAXONOMY         } from "$projectDir/modules/nf-core/krona/ktimporttaxonomy/main"
 
 // Malt subworkflow
@@ -128,6 +129,27 @@ workflow AMETA {
         ch_reference                          // ch_fasta
     )
     ch_versions = ch_versions.mix(FASTQ_ALIGN_BOWTIE2.out.versions)
+
+    if( !params.krakenuniq_db ) {
+        // TODO: Use Krakenuniq_Download to fetch taxonomy
+        KRAKENUNIQ_BUILD (
+            [   // Form input tuple.
+                [ id: 'krakenuniq_db' ],
+                file( params.krakenuniq_library_dir, checkIfExists: true ),
+                file( params.krakenuniq_taxonomy_dir, checkIfExists: true ),
+                file( params.krakenuniq_seq2taxid, checkIfExists: true )
+            ]
+        )
+    }
+    KRAKENUNIQ_PRELOADEDKRAKENUNIQ(
+        CUTADAPT.out.reads,              // [ meta, fastqs ]
+        Channel.fromPath(params.krakenuniq_db, checkIfExists: true )
+            .collect()                   // db
+        params.krakenuniq_ram_chunk_size // ram_chunk_size
+        true,                            // save_output_reads
+        true,                            // report_file
+        true                             // save_output
+    )
 
     CUSTOM_DUMPSOFTWAREVERSIONS (
         ch_versions.unique().collectFile(name: 'collated_versions.yml')
