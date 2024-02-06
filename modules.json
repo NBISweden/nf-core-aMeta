@@ -30,6 +30,11 @@
                         "git_sha": "65ad3e0b9a4099592e1102e92e10455dc661cf53",
                         "installed_by": ["modules"]
                     },
+                    "krakenuniq/build": {
+                        "branch": "master",
+                        "git_sha": "3f5420aa22e00bd030a2556dfdffc9e164ec0ec5",
+                        "installed_by": ["modules"]
+                    },
                     "krakenuniq/preloadedkrakenuniq": {
                         "branch": "master",
                         "git_sha": "8bbaa881ab9e59f3e18680550d65d52339640630",
