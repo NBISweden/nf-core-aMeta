@@ -61,6 +61,7 @@ include { MAPDAMAGE2 } from "$projectDir/modules/nf-core/mapdamage2/main"
 // Krakenuniq subworkflow
 include { KRAKENUNIQ_PRELOADEDKRAKENUNIQ } from "$projectDir/modules/nf-core/krakenuniq/preloadedkrakenuniq/"
 include { KRAKENUNIQ_BUILD               } from "$projectDir/modules/nf-core/krakenuniq/build/main"
+include { KRAKENUNIQ_FILTER              } from "$projectDir/modules/local/krakenuniq/filter"
 include { KRONA_KTIMPORTTAXONOMY         } from "$projectDir/modules/nf-core/krona/ktimporttaxonomy/main"
 
 // Malt subworkflow
@@ -149,6 +150,12 @@ workflow AMETA {
         true,                            // save_output_reads
         true,                            // report_file
         true                             // save_output
+    )
+    KRAKENUNIQ_FILTER(
+        KRAKENUNIQ_PRELOADEDKRAKENUNIQ.out.report,
+        params.n_unique_kmers,
+        params.n_tax_reads,
+        file( params.pathogenomes_found, checkIfExists: true )
     )
 
     CUSTOM_DUMPSOFTWAREVERSIONS (
