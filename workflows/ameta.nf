@@ -167,6 +167,11 @@ workflow AMETA {
         KRAKENUNIQ_TOKRONA.out.krona,
         file( params.krona_taxonomy_file, checkIfExists: true )
     )
+    KRAKENUNIQ_ABUNDANCEMATRIX(
+        KRAKENUNIQ_FILTER.out.filtered.map{ it[1] }.collect(),
+        params.n_unique_kmers,
+        params.n_tax_reads
+    )
 
     // SUBWORKFLOW: Map Damage
 
