@@ -134,6 +134,7 @@ workflow AMETA {
 
     if( !params.krakenuniq_db ) {
         // TODO: Use Krakenuniq_Download to fetch taxonomy
+        // TODO: Add to versions ch
         KRAKENUNIQ_BUILD (
             [   // Form input tuple.
                 [ id: 'krakenuniq_db' ],
