@@ -132,6 +132,7 @@ workflow AMETA {
     )
     ch_versions = ch_versions.mix(FASTQ_ALIGN_BOWTIE2.out.versions)
 
+    // SUBWORKFLOW: KRAKENUNIQ
     if( !params.krakenuniq_db ) {
         // TODO: Use Krakenuniq_Download to fetch taxonomy
         // TODO: Add to versions ch
@@ -162,6 +163,13 @@ workflow AMETA {
     KRAKENUNIQ_TOKRONA(
         KRAKENUNIQ_FILTER.out.filtered.join(KRAKENUNIQ_PRELOADEDKRAKENUNIQ.out.classified_assignment)
     )
+    KRONA_KTIMPORTTAXONOMY(
+        KRAKENUNIQ_TOKRONA.out.krona,
+        file( params.krona_taxonomy_file, checkIfExists: true )
+    )
+
+    // SUBWORKFLOW: Map Damage
+
 
     CUSTOM_DUMPSOFTWAREVERSIONS (
         ch_versions.unique().collectFile(name: 'collated_versions.yml')
