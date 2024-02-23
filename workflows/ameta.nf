@@ -208,7 +208,10 @@ workflow AMETA {
         CUTADAPT.out.reads,
         MALT_BUILD.out.index.collect()
     )
-    MALT_QUANTIFYABUNDANCE
+    MALT_QUANTIFYABUNDANCE(
+        MALT_RUN.out.alignments,
+        KRAKENUNIQ_ABUNDANCEMATRIX.out.krakenuniq_abundance_matrix.collect()
+    )
 
     CUSTOM_DUMPSOFTWAREVERSIONS (
         ch_versions.unique().collectFile(name: 'collated_versions.yml')
