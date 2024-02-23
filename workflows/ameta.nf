@@ -56,7 +56,8 @@ include { SAMTOOLS_FAIDX } from "$projectDir/modules/nf-core/samtools/faidx/main
 // Lots of other custom stuff here
 
 // Damage subworkflow
-include { MAPDAMAGE2 } from "$projectDir/modules/nf-core/mapdamage2/main"
+include { SAMTOOLS_VIEW } from "$projectDir/modules/nf-core/samtools/view/main"
+include { MAPDAMAGE2    } from "$projectDir/modules/nf-core/mapdamage2/main"
 
 // Krakenuniq subworkflow
 include { KRAKENUNIQ_PRELOADEDKRAKENUNIQ } from "$projectDir/modules/nf-core/krakenuniq/preloadedkrakenuniq/"
@@ -120,8 +121,7 @@ workflow AMETA {
     // SUBWORKFLOW: ALIGN
     //
     ch_reference = Channel.fromPath( params.bowtie2_db, checkIfExists: true)
-        .map{ file -> [ [ id: file.baseName ], file ] }
-    BOWTIE2_BUILD( ch_reference )
+    BOWTIE2_BUILD( ch_reference.map{ file -> [ [ id: file.baseName ], file ] } )
     ch_versions = ch_versions.mix(BOWTIE2_BUILD.out.versions.first())
     FASTQ_ALIGN_BOWTIE2(
         CUTADAPT.out.reads,                   // ch_reads
@@ -174,7 +174,32 @@ workflow AMETA {
     )
 
     // SUBWORKFLOW: Map Damage
+    Channel.fromPath( params.bowtie2_seqid2taxid_db, checkIfExists: true )
+        .flatMap{ tsv -> tsv.splitCsv(header:false, sep:"\t")*.reverse() }
+        .groupTuple() // [ taxid, [ ref1, ref2, ref3 ] ]
+        .combine( KRAKENUNIQ_FILTER.out.species_tax_id.flatMap{ meta, txt -> txt.splitText().collect{ [ it, meta ] } }, by: 0 )
+            // Don't need to collectFile. Just pass the list to $args2
+        // .collectFile(){ taxid, refs, meta -> [ "${meta.id}.${taxid}.seqids", refs.join('\n') ] }
+        // .map { file -> [ file.name.split('.')[0], file ] } // meta_id, refs file
+        .map { taxid, seqids, meta -> [ meta, taxid, seqids ] }
+        .combine( FASTQ_ALIGN_BOWTIE2.out.bam, by: 0 )
+        // Add taxid and seqids to meta so $args2 can reference it
+        .map { meta, taxid, seqids, bam -> [ meta + [ taxid: taxid, seqids: seqids ], bam ] }
+        .set{ ch_taxid_seqrefs }
+    SAMTOOLS_VIEW (
+        ch_taxid_seqrefs, // bam files
+        [ [] , [] ],      // Empty fasta reference
+        []                // Empty qname file
+    )
+    // FASTQ_ALIGN_BOWTIE2.out.bam.join( KRAKENUNIQ_FILTER.out.species_tax_id )
+    MAPDAMAGE2(
+        SAMTOOLS_VIEW.out.bam // bams,
+        ch_reference.collect() // fasta
+    )
 
+    // SUBWORKFLOW: Malt
+    // Need a convert step.
+    MALT_BUILD()
 
     CUSTOM_DUMPSOFTWAREVERSIONS (
         ch_versions.unique().collectFile(name: 'collated_versions.yml')
