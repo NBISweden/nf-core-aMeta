@@ -33,7 +33,7 @@ process MALT_BUILD {
         -d 'malt_index/' \\
         -t $task.cpus \\
         $args \\
-        -mdb ${mapping_db}/*.db |&tee malt-build.log
+        ${mapping_db ? "-mdb ${mapping_db}/*.db" : ''} |&tee malt-build.log
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":

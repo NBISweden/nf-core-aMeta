@@ -192,14 +192,23 @@ workflow AMETA {
         []                // Empty qname file
     )
     // FASTQ_ALIGN_BOWTIE2.out.bam.join( KRAKENUNIQ_FILTER.out.species_tax_id )
-    MAPDAMAGE2(
+    MAPDAMAGE2 (
         SAMTOOLS_VIEW.out.bam // bams,
         ch_reference.collect() // fasta
     )
 
     // SUBWORKFLOW: Malt
-    // Need a convert step.
-    MALT_BUILD()
+    MALT_PREPAREDB ( KRAKENUNIQ_ABUNDANCEMATRIX.out.krakenuniq_abundance_matrix )
+    MALT_BUILD ( // What is the accession2taxid arg?
+        MALT_PREPAREDB.out.library,
+        [],
+        []
+    )
+    MALT_RUN (
+        CUTADAPT.out.reads,
+        MALT_BUILD.out.index.collect()
+    )
+    MALT_QUANTIFYABUNDANCE
 
     CUSTOM_DUMPSOFTWAREVERSIONS (
         ch_versions.unique().collectFile(name: 'collated_versions.yml')
