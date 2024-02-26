@@ -1,6 +1,4 @@
 process MALT_ABUNDANCEMATRIXSAM {
-    // TODO: Fix tag
-    tag '$bam'
     label 'process_single'
 
     // Using same env as krakenuniq/abundancematrix
