@@ -67,8 +67,12 @@ include { KRAKENUNIQ_TOKRONA             } from "$projectDir/modules/local/krake
 include { KRONA_KTIMPORTTAXONOMY         } from "$projectDir/modules/nf-core/krona/ktimporttaxonomy/main"
 
 // Malt subworkflow
-include { MALT_BUILD } from "$projectDir/modules/nf-core/malt/build/main"
-include { MALT_RUN   } from "$projectDir/modules/nf-core/malt/run/main"
+include { MALT_PREPAREDB           } from "$projectDir/modules/local/malt/preparedb"
+include { MALT_BUILD               } from "$projectDir/modules/nf-core/malt/build/main"
+include { MALT_RUN                 } from "$projectDir/modules/nf-core/malt/run/main"
+include { MALT_QUANTIFYABUNDANCE   } from "$projectDir/modules/local/malt/quantifyabundance"
+include { MALT_ABUNDANCEMATRIXSAM  } from "$projectDir/modules/local/malt/abundancematrixsam"
+include { MALT_ABUNDANCEMATRIXRMA6 } from "$projectDir/modules/local/malt/abundancematrixrma6"
 
 // QC subworkflow
 include { FASTQC as FASTQC_RAW        } from '../modules/nf-core/fastqc/main'
@@ -208,10 +212,12 @@ workflow AMETA {
         CUTADAPT.out.reads,
         MALT_BUILD.out.index.collect()
     )
-    MALT_QUANTIFYABUNDANCE(
+    MALT_QUANTIFYABUNDANCE (
         MALT_RUN.out.alignments,
         KRAKENUNIQ_ABUNDANCEMATRIX.out.krakenuniq_abundance_matrix.collect()
     )
+    MALT_ABUNDANCEMATRIXSAM ( MALT_QUANTIFYABUNDANCE.out.counts.collect() )
+    MALT_ABUNDANCEMATRIXRMA6 ( MALT_RUN.out.rma6.collect() )
 
     CUSTOM_DUMPSOFTWAREVERSIONS (
         ch_versions.unique().collectFile(name: 'collated_versions.yml')
