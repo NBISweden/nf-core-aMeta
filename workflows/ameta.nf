@@ -46,18 +46,14 @@ include { INPUT_CHECK } from '../subworkflows/local/input_check'
 //
 // MODULE: Installed directly from nf-core/modules
 //
-// Bowtie subworkflow
+// QC subworkflow
+include { FASTQC as FASTQC_RAW        } from '../modules/nf-core/fastqc/main'
+include { FASTQC as FASTQC_TRIM       } from '../modules/nf-core/fastqc/main'
+include { CUTADAPT                    } from "$projectDir/modules/nf-core/cutadapt/main"
+
+// Align subworkflow
 include { BOWTIE2_BUILD       } from "$projectDir/modules/nf-core/bowtie2/build/main"
 include { FASTQ_ALIGN_BOWTIE2 } from "$projectDir/subworkflows/nf-core/fastq_align_bowtie2/main"
-
-// Authentic subworkflow
-include { MALTEXTRACT    } from "$projectDir/modules/nf-core/maltextract/main"
-include { SAMTOOLS_FAIDX } from "$projectDir/modules/nf-core/samtools/faidx/main"
-// Lots of other custom stuff here
-
-// Damage subworkflow
-include { SAMTOOLS_VIEW } from "$projectDir/modules/nf-core/samtools/view/main"
-include { MAPDAMAGE2    } from "$projectDir/modules/nf-core/mapdamage2/main"
 
 // Krakenuniq subworkflow
 include { KRAKENUNIQ_PRELOADEDKRAKENUNIQ } from "$projectDir/modules/nf-core/krakenuniq/preloadedkrakenuniq/"
@@ -65,6 +61,10 @@ include { KRAKENUNIQ_BUILD               } from "$projectDir/modules/nf-core/kra
 include { KRAKENUNIQ_FILTER              } from "$projectDir/modules/local/krakenuniq/filter"
 include { KRAKENUNIQ_TOKRONA             } from "$projectDir/modules/local/krakenuniq/toKrona"
 include { KRONA_KTIMPORTTAXONOMY         } from "$projectDir/modules/nf-core/krona/ktimporttaxonomy/main"
+
+// Damage subworkflow
+include { SAMTOOLS_VIEW } from "$projectDir/modules/nf-core/samtools/view/main"
+include { MAPDAMAGE2    } from "$projectDir/modules/nf-core/mapdamage2/main"
 
 // Malt subworkflow
 include { MALT_PREPAREDB           } from "$projectDir/modules/local/malt/preparedb"
@@ -74,10 +74,15 @@ include { MALT_QUANTIFYABUNDANCE   } from "$projectDir/modules/local/malt/quanti
 include { MALT_ABUNDANCEMATRIXSAM  } from "$projectDir/modules/local/malt/abundancematrixsam"
 include { MALT_ABUNDANCEMATRIXRMA6 } from "$projectDir/modules/local/malt/abundancematrixrma6"
 
-// QC subworkflow
-include { FASTQC as FASTQC_RAW        } from '../modules/nf-core/fastqc/main'
-include { FASTQC as FASTQC_TRIM       } from '../modules/nf-core/fastqc/main'
-include { CUTADAPT                    } from "$projectDir/modules/nf-core/cutadapt/main"
+// Authentic subworkflow
+include { MALTEXTRACT            } from "$projectDir/modules/nf-core/maltextract/main"
+include { SAMTOOLS_FAIDX         } from "$projectDir/modules/nf-core/samtools/faidx/main"
+include { BREADTHOFCOVERAGE      } from "$projectDir/modules/local/breadthofcoverage"
+include { READLENGTHDISTRIBUTION } from "$projectDir/modules/local/readlengthdistribution"
+include { PMDTOOLS_SCORE         } from "$projectDir/modules/local/pmdtools/score"
+
+// summary subworkflow
+
 include { MULTIQC                     } from '../modules/nf-core/multiqc/main'
 include { CUSTOM_DUMPSOFTWAREVERSIONS } from '../modules/nf-core/custom/dumpsoftwareversions/main'
 
@@ -218,6 +223,23 @@ workflow AMETA {
     )
     MALT_ABUNDANCEMATRIXSAM ( MALT_QUANTIFYABUNDANCE.out.counts.collect() )
     MALT_ABUNDANCEMATRIXRMA6 ( MALT_RUN.out.rma6.collect() )
+
+    // SUBWORKFLOW: authentic
+    // Create sample taxid directories // TODO Do I need this?
+    SAMTOOLS_FAIDX( ch_reference.map{ file -> [ [ id: file.baseName ], file ] } ) // TODO check: Should be malt_nt
+    malt_nt_fasta = ch_reference.join(SAMTOOLS_FAIDX.out.fai).multiMap { meta, fasta, fai ->
+            fasta: fasta
+            fai  : fai
+        }
+    BREADTHOFCOVERAGE(
+        MALT_RUN.out.alignments,
+        malt_nt_fasta.fasta.collect(),
+        malt_nt_fasta.fai.collect(),
+    )
+    READLENGTHDISTRIBUTION(BREADTHOFCOVERAGE.out.sorted_bam)
+    PMDTOOLS_SCORE(BREADTHOFCOVERAGE.out.sorted_bam)
+
+    // SUBWORKFLOW: summary
 
     CUSTOM_DUMPSOFTWAREVERSIONS (
         ch_versions.unique().collectFile(name: 'collated_versions.yml')
