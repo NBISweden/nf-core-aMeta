@@ -13,7 +13,9 @@ process BREADTHOFCOVERAGE {
     path fai   // malt_nt_fasta
 
     output:
-    tuple val(meta), path("*.bam"), emit: bam
+    tuple val(meta), path("name_list.txt"), emit: name_list
+    tuple val(meta), path("*.sorted.bam"), emit: sorted_bam
+    tuple val(meta), path("*.breath_of_coverage"), emit: breath_of_coverage
     path "versions.yml"           , emit: versions
 
     when:
