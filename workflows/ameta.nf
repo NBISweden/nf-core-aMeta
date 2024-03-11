@@ -80,6 +80,8 @@ include { SAMTOOLS_FAIDX         } from "$projectDir/modules/nf-core/samtools/fa
 include { BREADTHOFCOVERAGE      } from "$projectDir/modules/local/breadthofcoverage"
 include { READLENGTHDISTRIBUTION } from "$projectDir/modules/local/readlengthdistribution"
 include { PMDTOOLS_SCORE         } from "$projectDir/modules/local/pmdtools/score"
+include { PMDTOOLS_DEAMINATION   } from "$projectDir/modules/local/pmdtools/deamination"
+include { AUTHENTICATIONPLOTS    } from "$projectDir/modules/local/authenticiationplots"
 
 // summary subworkflow
 
@@ -226,6 +228,12 @@ workflow AMETA {
 
     // SUBWORKFLOW: authentic
     // Create sample taxid directories // TODO Do I need this?
+    MAKENODELIST() // TODO meta
+    MALTEXTRACT(
+        MALT_RUN.out.rma6,
+        MAKENODELIST.out.node_list, // Join?
+        file(params.ncbi_dir, checkIfExists: true)
+    )
     SAMTOOLS_FAIDX( ch_reference.map{ file -> [ [ id: file.baseName ], file ] } ) // TODO check: Should be malt_nt
     malt_nt_fasta = ch_reference.join(SAMTOOLS_FAIDX.out.fai).multiMap { meta, fasta, fai ->
             fasta: fasta
@@ -238,6 +246,24 @@ workflow AMETA {
     )
     READLENGTHDISTRIBUTION(BREADTHOFCOVERAGE.out.sorted_bam)
     PMDTOOLS_SCORE(BREADTHOFCOVERAGE.out.sorted_bam)
+    PMDTOOLS_DEAMINATION(BREADTHOFCOVERAGE.out.sorted_bam)
+    AUTHENTICATIONPLOTS(
+        node_list // TODO
+        .join(READLENGTHDISTRIBUTION.out.read_length)
+        .join(PMDTOOLS_SCORE.out.pmd_scores)
+        .join(BREADTHOFCOVERAGE.out.breadth_of_coverage)
+    )
+    ch_authentication_score = MALT_RUN.out.rma6
+        .join(MALTEXTRACT.out.results)
+        .join(BREADTHOFCOVERAGE.out.name_list)
+        .multiMap { meta, rma6, maltex_dir, name_list ->
+            rma6: [ meta, rma6 ]
+            maltex_dir: maltex_dir
+            name_list: name_list
+    }
+    AUTHENTICATIONSCORE(
+        ch_authentication_score // 3 channels
+    )
 
     // SUBWORKFLOW: summary
 

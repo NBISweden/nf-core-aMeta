@@ -1,4 +1,4 @@
-process AUTHENTICATIONPLOTS {
+process AUTHENTICATIONSCORE {
     tag "$meta.id"
     label 'process_single'
 
@@ -9,16 +9,12 @@ process AUTHENTICATIONPLOTS {
         'biocontainers/mulled-v2-8849acf39a43cdd6c839a369a74c0adc823e2f91:ab110436faf952a33575c64dd74615a84011450b-0' }"
 
     input:
-    tuple(
-        val(meta),
-        path(node_list, stageAs: 'infiles/*'),
-        path(read_length, stageAs: 'infiles/*'),
-        path(pmd_scores, stageAs: 'infiles/*'),
-        path(breadth_of_coverage, stageAs: 'infiles/*')
-    )
+    tuple val(meta), path(rma6)
+    path(malt_extract_dir)
+    path(name_list)
 
     output:
-    tuple val(meta), path("*.bam"), emit: bam
+    tuple val(meta), path("*.bam"), emit: authentication_scores
     path "versions.yml"           , emit: versions
 
     when:
@@ -28,7 +24,10 @@ process AUTHENTICATIONPLOTS {
     def args = task.ext.args ?: ''
     def prefix = task.ext.prefix ?: "${meta.id}"
     """
-    authentic.R ${meta.taxid} ${meta.id}.trimmed.rma6 infiles/
+    score.R $rma6 \\
+        $(dirname $maltextractlog) \\
+        $name_list \\
+        $(dirname $name_list)
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
