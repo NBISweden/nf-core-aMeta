@@ -60,7 +60,9 @@ include { KRAKENUNIQ_PRELOADEDKRAKENUNIQ } from "$projectDir/modules/nf-core/kra
 include { KRAKENUNIQ_BUILD               } from "$projectDir/modules/nf-core/krakenuniq/build/main"
 include { KRAKENUNIQ_FILTER              } from "$projectDir/modules/local/krakenuniq/filter"
 include { KRAKENUNIQ_TOKRONA             } from "$projectDir/modules/local/krakenuniq/toKrona"
+include { KRONA_KTUPDATETAXONOMY         } from "$projectDir/modules/nf-core/krona/ktupdatetaxonomy/main"
 include { KRONA_KTIMPORTTAXONOMY         } from "$projectDir/modules/nf-core/krona/ktimporttaxonomy/main"
+include { KRAKENUNIQ_ABUNDANCEMATRIX     } from "$projectDir/modules/local/krakenuniq/abundancematrix"
 
 // Damage subworkflow
 include { SAMTOOLS_VIEW } from "$projectDir/modules/nf-core/samtools/view/main"
@@ -81,7 +83,7 @@ include { BREADTHOFCOVERAGE      } from "$projectDir/modules/local/breadthofcove
 include { READLENGTHDISTRIBUTION } from "$projectDir/modules/local/readlengthdistribution"
 include { PMDTOOLS_SCORE         } from "$projectDir/modules/local/pmdtools/score"
 include { PMDTOOLS_DEAMINATION   } from "$projectDir/modules/local/pmdtools/deamination"
-include { AUTHENTICATIONPLOTS    } from "$projectDir/modules/local/authenticiationplots"
+include { AUTHENTICATIONPLOTS    } from "$projectDir/modules/local/authenticationplots"
 
 // summary subworkflow
 
@@ -157,13 +159,13 @@ workflow AMETA {
         )
     }
     KRAKENUNIQ_PRELOADEDKRAKENUNIQ(
-        CUTADAPT.out.reads,              // [ meta, fastqs ]
+        CUTADAPT.out.reads,               // [ meta, fastqs ]
         Channel.fromPath(params.krakenuniq_db, checkIfExists: true )
-            .collect()                   // db
-        params.krakenuniq_ram_chunk_size // ram_chunk_size
-        true,                            // save_output_reads
-        true,                            // report_file
-        true                             // save_output
+            .collect(),                   // db
+        params.krakenuniq_ram_chunk_size, // ram_chunk_size
+        true,                             // save_output_reads
+        true,                             // report_file
+        true                              // save_output
     )
     KRAKENUNIQ_FILTER(
         KRAKENUNIQ_PRELOADEDKRAKENUNIQ.out.report,
@@ -174,9 +176,10 @@ workflow AMETA {
     KRAKENUNIQ_TOKRONA(
         KRAKENUNIQ_FILTER.out.filtered.join(KRAKENUNIQ_PRELOADEDKRAKENUNIQ.out.classified_assignment)
     )
+    KRONA_KTUPDATETAXONOMY()
     KRONA_KTIMPORTTAXONOMY(
         KRAKENUNIQ_TOKRONA.out.krona,
-        file( params.krona_taxonomy_file, checkIfExists: true )
+        params.krona_taxonomy_file ? file( params.krona_taxonomy_file, checkIfExists: true ) : KRONA_KTUPDATETAXONOMY.out.db
     )
     KRAKENUNIQ_ABUNDANCEMATRIX(
         KRAKENUNIQ_FILTER.out.filtered.map{ it[1] }.collect(),
@@ -185,85 +188,85 @@ workflow AMETA {
     )
 
     // SUBWORKFLOW: Map Damage
-    Channel.fromPath( params.bowtie2_seqid2taxid_db, checkIfExists: true )
-        .flatMap{ tsv -> tsv.splitCsv(header:false, sep:"\t")*.reverse() }
-        .groupTuple() // [ taxid, [ ref1, ref2, ref3 ] ]
-        .combine( KRAKENUNIQ_FILTER.out.species_tax_id.flatMap{ meta, txt -> txt.splitText().collect{ [ it, meta ] } }, by: 0 )
-            // Don't need to collectFile. Just pass the list to $args2
-        // .collectFile(){ taxid, refs, meta -> [ "${meta.id}.${taxid}.seqids", refs.join('\n') ] }
-        // .map { file -> [ file.name.split('.')[0], file ] } // meta_id, refs file
-        .map { taxid, seqids, meta -> [ meta, taxid, seqids ] }
-        .combine( FASTQ_ALIGN_BOWTIE2.out.bam, by: 0 )
-        // Add taxid and seqids to meta so $args2 can reference it
-        .map { meta, taxid, seqids, bam -> [ meta + [ taxid: taxid, seqids: seqids ], bam ] }
-        .set{ ch_taxid_seqrefs }
-    SAMTOOLS_VIEW (
-        ch_taxid_seqrefs, // bam files
-        [ [] , [] ],      // Empty fasta reference
-        []                // Empty qname file
-    )
-    // FASTQ_ALIGN_BOWTIE2.out.bam.join( KRAKENUNIQ_FILTER.out.species_tax_id )
-    MAPDAMAGE2 (
-        SAMTOOLS_VIEW.out.bam // bams,
-        ch_reference.collect() // fasta
-    )
+    // Channel.fromPath( params.bowtie2_seqid2taxid_db, checkIfExists: true )
+    //     .flatMap{ tsv -> tsv.splitCsv(header:false, sep:"\t")*.reverse() }
+    //     .groupTuple() // [ taxid, [ ref1, ref2, ref3 ] ]
+    //     .combine( KRAKENUNIQ_FILTER.out.species_tax_id.flatMap{ meta, txt -> txt.splitText().collect{ [ it, meta ] } }, by: 0 )
+    //         // Don't need to collectFile. Just pass the list to $args2
+    //     // .collectFile(){ taxid, refs, meta -> [ "${meta.id}.${taxid}.seqids", refs.join('\n') ] }
+    //     // .map { file -> [ file.name.split('.')[0], file ] } // meta_id, refs file
+    //     .map { taxid, seqids, meta -> [ meta, taxid, seqids ] }
+    //     .combine( FASTQ_ALIGN_BOWTIE2.out.bam, by: 0 )
+    //     // Add taxid and seqids to meta so $args2 can reference it
+    //     .map { meta, taxid, seqids, bam -> [ meta + [ taxid: taxid, seqids: seqids ], bam ] }
+    //     .set{ ch_taxid_seqrefs }
+    // SAMTOOLS_VIEW (
+    //     ch_taxid_seqrefs, // bam files
+    //     [ [] , [] ],      // Empty fasta reference
+    //     []                // Empty qname file
+    // )
+    // // FASTQ_ALIGN_BOWTIE2.out.bam.join( KRAKENUNIQ_FILTER.out.species_tax_id )
+    // MAPDAMAGE2 (
+    //     SAMTOOLS_VIEW.out.bam // bams,
+    //     ch_reference.collect() // fasta
+    // )
 
     // SUBWORKFLOW: Malt
-    MALT_PREPAREDB ( KRAKENUNIQ_ABUNDANCEMATRIX.out.krakenuniq_abundance_matrix )
-    MALT_BUILD ( // What is the accession2taxid arg?
-        MALT_PREPAREDB.out.library,
-        [],
-        []
-    )
-    MALT_RUN (
-        CUTADAPT.out.reads,
-        MALT_BUILD.out.index.collect()
-    )
-    MALT_QUANTIFYABUNDANCE (
-        MALT_RUN.out.alignments,
-        KRAKENUNIQ_ABUNDANCEMATRIX.out.krakenuniq_abundance_matrix.collect()
-    )
-    MALT_ABUNDANCEMATRIXSAM ( MALT_QUANTIFYABUNDANCE.out.counts.collect() )
-    MALT_ABUNDANCEMATRIXRMA6 ( MALT_RUN.out.rma6.collect() )
+    // MALT_PREPAREDB ( KRAKENUNIQ_ABUNDANCEMATRIX.out.krakenuniq_abundance_matrix )
+    // MALT_BUILD ( // What is the accession2taxid arg?
+    //     MALT_PREPAREDB.out.library,
+    //     [],
+    //     []
+    // )
+    // MALT_RUN (
+    //     CUTADAPT.out.reads,
+    //     MALT_BUILD.out.index.collect()
+    // )
+    // MALT_QUANTIFYABUNDANCE (
+    //     MALT_RUN.out.alignments,
+    //     KRAKENUNIQ_ABUNDANCEMATRIX.out.krakenuniq_abundance_matrix.collect()
+    // )
+    // MALT_ABUNDANCEMATRIXSAM ( MALT_QUANTIFYABUNDANCE.out.counts.collect() )
+    // MALT_ABUNDANCEMATRIXRMA6 ( MALT_RUN.out.rma6.collect() )
 
     // SUBWORKFLOW: authentic
     // Create sample taxid directories // TODO Do I need this?
-    MAKENODELIST() // TODO meta
-    MALTEXTRACT(
-        MALT_RUN.out.rma6,
-        MAKENODELIST.out.node_list, // Join?
-        file(params.ncbi_dir, checkIfExists: true)
-    )
-    SAMTOOLS_FAIDX( ch_reference.map{ file -> [ [ id: file.baseName ], file ] } ) // TODO check: Should be malt_nt
-    malt_nt_fasta = ch_reference.join(SAMTOOLS_FAIDX.out.fai).multiMap { meta, fasta, fai ->
-            fasta: fasta
-            fai  : fai
-        }
-    BREADTHOFCOVERAGE(
-        MALT_RUN.out.alignments,
-        malt_nt_fasta.fasta.collect(),
-        malt_nt_fasta.fai.collect(),
-    )
-    READLENGTHDISTRIBUTION(BREADTHOFCOVERAGE.out.sorted_bam)
-    PMDTOOLS_SCORE(BREADTHOFCOVERAGE.out.sorted_bam)
-    PMDTOOLS_DEAMINATION(BREADTHOFCOVERAGE.out.sorted_bam)
-    AUTHENTICATIONPLOTS(
-        node_list // TODO
-        .join(READLENGTHDISTRIBUTION.out.read_length)
-        .join(PMDTOOLS_SCORE.out.pmd_scores)
-        .join(BREADTHOFCOVERAGE.out.breadth_of_coverage)
-    )
-    ch_authentication_score = MALT_RUN.out.rma6
-        .join(MALTEXTRACT.out.results)
-        .join(BREADTHOFCOVERAGE.out.name_list)
-        .multiMap { meta, rma6, maltex_dir, name_list ->
-            rma6: [ meta, rma6 ]
-            maltex_dir: maltex_dir
-            name_list: name_list
-    }
-    AUTHENTICATIONSCORE(
-        ch_authentication_score // 3 channels
-    )
+    // MAKENODELIST() // TODO meta
+    // MALTEXTRACT(
+    //     MALT_RUN.out.rma6,
+    //     MAKENODELIST.out.node_list, // Join?
+    //     file(params.ncbi_dir, checkIfExists: true)
+    // )
+    // SAMTOOLS_FAIDX( ch_reference.map{ file -> [ [ id: file.baseName ], file ] } ) // TODO check: Should be malt_nt
+    // malt_nt_fasta = ch_reference.join(SAMTOOLS_FAIDX.out.fai).multiMap { meta, fasta, fai ->
+    //         fasta: fasta
+    //         fai  : fai
+    //     }
+    // BREADTHOFCOVERAGE(
+    //     MALT_RUN.out.alignments,
+    //     malt_nt_fasta.fasta.collect(),
+    //     malt_nt_fasta.fai.collect(),
+    // )
+    // READLENGTHDISTRIBUTION(BREADTHOFCOVERAGE.out.sorted_bam)
+    // PMDTOOLS_SCORE(BREADTHOFCOVERAGE.out.sorted_bam)
+    // PMDTOOLS_DEAMINATION(BREADTHOFCOVERAGE.out.sorted_bam)
+    // AUTHENTICATIONPLOTS(
+    //     node_list // TODO
+    //     .join(READLENGTHDISTRIBUTION.out.read_length)
+    //     .join(PMDTOOLS_SCORE.out.pmd_scores)
+    //     .join(BREADTHOFCOVERAGE.out.breadth_of_coverage)
+    // )
+    // ch_authentication_score = MALT_RUN.out.rma6
+    //     .join(MALTEXTRACT.out.results)
+    //     .join(BREADTHOFCOVERAGE.out.name_list)
+    //     .multiMap { meta, rma6, maltex_dir, name_list ->
+    //         rma6: [ meta, rma6 ]
+    //         maltex_dir: maltex_dir
+    //         name_list: name_list
+    // }
+    // AUTHENTICATIONSCORE(
+    //     ch_authentication_score // 3 channels
+    // )
 
     // SUBWORKFLOW: summary
 
