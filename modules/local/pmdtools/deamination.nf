@@ -23,7 +23,7 @@ process PMDTOOLS_DEAMINATION {
     """
     (samtools view {input.bam} || true) \\
         | pmdtools --platypus --number 2000000 > PMD_temp.txt
-    R CMD BATCH $(which plotPMD)
+    R CMD BATCH \$(which plotPMD)
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
