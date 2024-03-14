@@ -14,7 +14,7 @@ n_tax_reads <- as.integer(args[4])
 krakenuniq_outputs <- list.files(path = input_dir)
 df <- list()
 for (i in 1:length(krakenuniq_outputs)) {
-  df[[i]] <- read.delim(paste0(input_dir, "/", krakenuniq_outputs[i], "/krakenuniq.output.filtered"), comment.char = "#", header = TRUE)
+  df[[i]] <- read.delim(paste0(input_dir, "/", krakenuniq_outputs[i]), comment.char = "#", header = TRUE)
   if (dim(df[[i]])[1] != 0) {
     df[[i]]$SAMPLE <- krakenuniq_outputs[i]
     df[[i]] <- na.omit(df[[i]])
