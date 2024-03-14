@@ -1,5 +1,4 @@
 process KRAKENUNIQ_ABUNDANCEMATRIX {
-    tag "$meta.id"
     label 'process_single'
 
     // https://github.com/nf-core/atacseq/blob/1a1dbe52ffbd82256c941a032b0e22abbd925b8a/modules/local/deseq2_qc.nf#L7
@@ -27,7 +26,6 @@ process KRAKENUNIQ_ABUNDANCEMATRIX {
     def args = task.ext.args ?: ''
     def prefix = task.ext.prefix ?: "krakenuniq"
     """
-    mkdir krakenuniq_abundance_matrix
     krakenuniq_abundance_matrix.R \\
         krakenuniq \\
         krakenuniq_abundance_matrix \\
