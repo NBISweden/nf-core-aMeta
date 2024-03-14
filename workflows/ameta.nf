@@ -134,14 +134,15 @@ workflow AMETA {
     // SUBWORKFLOW: ALIGN
     //
     ch_reference = Channel.fromPath( params.bowtie2_db, checkIfExists: true)
-    BOWTIE2_BUILD( ch_reference.map{ file -> [ [ id: file.baseName ], file ] } )
+        .map{ file -> [ [ id: file.baseName ], file ] }
+    BOWTIE2_BUILD( ch_reference )
     ch_versions = ch_versions.mix(BOWTIE2_BUILD.out.versions.first())
     FASTQ_ALIGN_BOWTIE2(
         CUTADAPT.out.reads,                   // ch_reads
         BOWTIE2_BUILD.out.index.collect(),    // ch_index
         false,                                // save unaligned
         false,                                // sort bam
-        ch_reference                          // ch_fasta
+        ch_reference.collect()                // ch_fasta
     )
     ch_versions = ch_versions.mix(FASTQ_ALIGN_BOWTIE2.out.versions)
 
@@ -151,7 +152,7 @@ workflow AMETA {
         // TODO: Add to versions ch
         KRAKENUNIQ_BUILD (
             [   // Form input tuple.
-                [ id: 'krakenuniq_db' ],
+                [ id: 'KrakenUniq_DB' ],
                 file( params.krakenuniq_library_dir, checkIfExists: true ),
                 file( params.krakenuniq_taxonomy_dir, checkIfExists: true ),
                 file( params.krakenuniq_seq2taxid, checkIfExists: true )
@@ -160,8 +161,9 @@ workflow AMETA {
     }
     KRAKENUNIQ_PRELOADEDKRAKENUNIQ(
         CUTADAPT.out.reads,               // [ meta, fastqs ]
-        Channel.fromPath(params.krakenuniq_db, checkIfExists: true )
-            .collect(),                   // db
+        params.krakenuniq_db ?
+            Channel.fromPath(params.krakenuniq_db, checkIfExists: true ).collect() :
+            KRAKENUNIQ_BUILD.out.db.map{ it[1] }.collect(), // db
         params.krakenuniq_ram_chunk_size, // ram_chunk_size
         true,                             // save_output_reads
         true,                             // report_file

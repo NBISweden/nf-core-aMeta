@@ -7,4 +7,5 @@ nextflow run barebones.nf \
     -ansi-log false \
     -profile test,singularity \
     --outdir results \
+    --db_cache 'results/database_cache' \
     --validate_params false
