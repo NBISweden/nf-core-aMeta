@@ -1,3 +1,5 @@
+#! /usr/bin/env Rscript
+
 #This is a script for combining Malt microbial quantifications from multiple samples and producing species abundance matrix.
 #Run this script as:
 #Rscipt malt_abundance_matrix.R input_dir output_dir

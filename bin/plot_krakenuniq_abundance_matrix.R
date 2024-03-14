@@ -1,3 +1,5 @@
+#! /usr/bin/env Rscript
+
 #This is a script for plotting KrakenUniq abundance matrix.
 #Run this script as:
 #Rscript plot_krakenuniq_abundance_matrix.R in_dir out_dir

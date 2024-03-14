@@ -1,3 +1,5 @@
+#! /usr/bin/env Rscript
+
 #MAKING VALIDATION PLOTS
 
 #ARGUMENTS OF SCRIPT

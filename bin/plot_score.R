@@ -1,3 +1,5 @@
+#! /usr/bin/env Rscript
+
 #This is a script for plotting a heatmap overview of aMeta authentication scores.
 #Run this script as:
 #Rscript plot_score.R in_dir out_dir
@@ -27,7 +29,7 @@ for(i in samples)
       {
         next
       }
-      
+
     }
     score_per_sample[[i]]<-Reduce(rbind,score)
     names(score_per_sample[[i]])[2]<-i

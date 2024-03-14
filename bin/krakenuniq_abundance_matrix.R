@@ -1,3 +1,5 @@
+#! /usr/bin/env Rscript
+
 #This is a script for combining KrakenUniq outputs from multiple samples and producing species abundance matrix.
 #Run this script as:
 #Rscipt krakenuniq_abundance_matrix.R input_dir output_dir n_unique_kmers n_tax_reads
