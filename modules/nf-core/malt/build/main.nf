@@ -33,11 +33,11 @@ process MALT_BUILD {
         -d 'malt_index/' \\
         -t $task.cpus \\
         $args \\
-        ${mapping_db ? "-mdb ${mapping_db}/*.db" : ''} |&tee malt-build.log
+        --acc2taxa ${mapping_db} |& tee malt-build.log
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
-        malt: \$(malt-build --help |& tail -n 3 | head -n 1 | cut -f 2 -d'(' | cut -f 1 -d ',' | cut -d ' ' -f 2)
+        malt: \$( malt-build --help |& sed '/version/!d; s/.*version //; s/,.*//' )
     END_VERSIONS
     """
 }
