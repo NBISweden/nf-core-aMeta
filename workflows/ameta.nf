@@ -214,7 +214,11 @@ workflow AMETA {
     )
 
     // SUBWORKFLOW: Malt
-    // MALT_PREPAREDB ( KRAKENUNIQ_ABUNDANCEMATRIX.out.krakenuniq_abundance_matrix )
+    MALT_PREPAREDB (
+        KRAKENUNIQ_ABUNDANCEMATRIX.out.species_taxid_list,
+        file(params.malt_seqid2taxid_db, checkIfExists: true),
+        file(params.malt_nt_fasta, checkIfExists: true)
+    )
     // MALT_BUILD ( // What is the accession2taxid arg?
     //     MALT_PREPAREDB.out.library,
     //     [],

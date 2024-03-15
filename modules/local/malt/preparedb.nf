@@ -1,5 +1,4 @@
 process MALT_PREPAREDB {
-    tag "$unique_taxids"
     label 'process_single'
 
     conda "bioconda::seqtk=1.4"

@@ -15,9 +15,13 @@ process KRAKENUNIQ_ABUNDANCEMATRIX {
     val n_tax_reads
 
     output:
-    path("krakenuniq_abundance_matrix"), emit: krakenuniq_abundance_matrix
-    path("*.abundance_matrix.log")     , emit: log
-    path "versions.yml"                , emit: versions
+    path("krakenuniq.abundance_matrix.log")            , emit: log
+    path("krakenuniq_absolute_abundance_heatmap.pdf")  , emit: absolute_abundance_heatmap
+    path("krakenuniq_abundance_matrix.txt")            , emit: absolute_abundance_matrix
+    path("krakenuniq_normalized_abundance_heatmap.pdf"), emit: normalized_abundance_heatmap
+    path("unique_species_names_list.txt")              , emit: species_names_list
+    path("unique_species_taxid_list.txt")              , emit: species_taxid_list
+    path "versions.yml"                                , emit: versions
 
     when:
     task.ext.when == null || task.ext.when
@@ -28,14 +32,15 @@ process KRAKENUNIQ_ABUNDANCEMATRIX {
     """
     krakenuniq_abundance_matrix.R \\
         krakenuniq \\
-        krakenuniq_abundance_matrix \\
+        . \\
         $n_unique_kmers \\
         $n_tax_reads \\
         |& tee ${prefix}.abundance_matrix.log
     plot_krakenuniq_abundance_matrix.R \\
-        krakenuniq_abundance_matrix \\
-        krakenuniq_abundance_matrix \\
+        . \\
+        . \\
         |& tee -a ${prefix}.abundance_matrix.log
+    ls
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
