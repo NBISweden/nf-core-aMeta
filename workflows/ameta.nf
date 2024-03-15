@@ -219,15 +219,16 @@ workflow AMETA {
         file(params.malt_seqid2taxid_db, checkIfExists: true),
         file(params.malt_nt_fasta, checkIfExists: true)
     )
-    // MALT_BUILD ( // What is the accession2taxid arg?
-    //     MALT_PREPAREDB.out.library,
-    //     [],
-    //     []
-    // )
-    // MALT_RUN (
-    //     CUTADAPT.out.reads,
-    //     MALT_BUILD.out.index.collect()
-    // )
+    MALT_BUILD ( // What is the accession2taxid arg?
+        MALT_PREPAREDB.out.library,
+        [],
+        file(params.malt_accession2taxid, checkIfExists: true) // Note: Deprecated. Should be replaced with Megan db.
+    )
+    MALT_RUN (
+        CUTADAPT.out.reads,
+        MALT_BUILD.out.index.collect(),
+        'BlastN'
+    )
     // MALT_QUANTIFYABUNDANCE (
     //     MALT_RUN.out.alignments,
     //     KRAKENUNIQ_ABUNDANCEMATRIX.out.krakenuniq_abundance_matrix.collect()
