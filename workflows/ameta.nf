@@ -163,7 +163,7 @@ workflow AMETA {
         CUTADAPT.out.reads,               // [ meta, fastqs ]
         params.krakenuniq_db ?
             Channel.fromPath(params.krakenuniq_db, checkIfExists: true ).collect() :
-            KRAKENUNIQ_BUILD.out.db.map{ it[1] }.collect(), // db
+            KRAKENUNIQ_BUILD.out.db.collect{ it[1] }, // db
         params.krakenuniq_ram_chunk_size, // ram_chunk_size
         true,                             // save_output_reads
         true,                             // report_file
@@ -184,7 +184,7 @@ workflow AMETA {
         params.krona_taxonomy_file ? file( params.krona_taxonomy_file, checkIfExists: true ) : KRONA_KTUPDATETAXONOMY.out.db
     )
     KRAKENUNIQ_ABUNDANCEMATRIX(
-        KRAKENUNIQ_FILTER.out.filtered.map{ it[1] }.collect(),
+        KRAKENUNIQ_FILTER.out.filtered.collect{ it[1] },
         params.n_unique_kmers,
         params.n_tax_reads
     )
@@ -210,7 +210,7 @@ workflow AMETA {
     // FASTQ_ALIGN_BOWTIE2.out.bam.join( KRAKENUNIQ_FILTER.out.species_tax_id )
     MAPDAMAGE2 (
         SAMTOOLS_VIEW.out.bam, // bams
-        ch_reference.map{ it[1] }.collect() // fasta
+        ch_reference.collect{ it[1] } // fasta
     )
 
     // SUBWORKFLOW: Malt
@@ -229,12 +229,12 @@ workflow AMETA {
         MALT_BUILD.out.index.collect(),
         'BlastN'
     )
-    // MALT_QUANTIFYABUNDANCE (
-    //     MALT_RUN.out.alignments,
-    //     KRAKENUNIQ_ABUNDANCEMATRIX.out.krakenuniq_abundance_matrix.collect()
-    // )
-    // MALT_ABUNDANCEMATRIXSAM ( MALT_QUANTIFYABUNDANCE.out.counts.collect() )
-    // MALT_ABUNDANCEMATRIXRMA6 ( MALT_RUN.out.rma6.collect() )
+    MALT_QUANTIFYABUNDANCE (
+        MALT_RUN.out.alignments,
+        KRAKENUNIQ_ABUNDANCEMATRIX.out.species_taxid_list.collect()
+    )
+    MALT_ABUNDANCEMATRIXSAM ( MALT_QUANTIFYABUNDANCE.out.counts.collect{ it[1] } )
+    MALT_ABUNDANCEMATRIXRMA6 ( MALT_RUN.out.rma6.collect{ it[1] } )
 
     // SUBWORKFLOW: authentic
     // Create sample taxid directories // TODO Do I need this?
