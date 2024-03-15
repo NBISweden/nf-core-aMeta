@@ -10,6 +10,7 @@ process MALT_RUN {
     input:
     tuple val(meta), path(fastqs)
     path index
+    val mode
 
     output:
     tuple val(meta), path("*.rma6")                          , emit: rma6
@@ -21,21 +22,23 @@ process MALT_RUN {
     task.ext.when == null || task.ext.when
 
     script:
+    assert mode in ['Unknown', 'BlastN', 'BlastP', 'BlastX', 'Classifier']
     def args = task.ext.args ?: ''
     def prefix = task.ext.prefix ?: "${meta.id}"
 
     """
     malt-run \\
-        -t $task.cpus \\
-        -v \\
-        -o . \\
+        --numThreads $task.cpus \\
+        --mode $mode \\
+        --verbose \\
+        --output . \\
         $args \\
         --inFile ${fastqs.join(' ')} \\
-        --index $index/ |&tee ${prefix}-malt-run.log
+        --index $index/ |& tee ${prefix}-malt-run.log
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
-        malt: \$(malt-run --help  2>&1 | grep -o 'version.* ' | cut -f 1 -d ',' | cut -f2 -d ' ')
+        malt: \$( malt-run --help |& sed '/version/!d; s/.*version //; s/,.*//' )
     END_VERSIONS
     """
 }
