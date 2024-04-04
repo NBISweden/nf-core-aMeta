@@ -2,19 +2,18 @@ process MALT_QUANTIFYABUNDANCE {
     tag "$meta.id"
     label 'process_single'
 
-    // TODO: Fix container and versions string
-    conda "${moduleDir}/environment.yml"
+    conda "conda-forge::python=3.8.3"
     container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
-        'https://depot.galaxyproject.org/singularity/YOUR-TOOL-HERE':
-        'biocontainers/YOUR-TOOL-HERE' }"
+        'https://depot.galaxyproject.org/singularity/python:3.8.3' :
+        'biocontainers/python:3.8.3' }"
 
     input:
     tuple val(meta), path(sam)
     path unique_taxids
 
     output:
-    tuple val(meta), path("*.counts"), emit: counts
-    path "versions.yml"              , emit: versions
+    tuple val(meta), path("*_counts.txt"), emit: counts
+    path "versions.yml"                  , emit: versions
 
     when:
     task.ext.when == null || task.ext.when
