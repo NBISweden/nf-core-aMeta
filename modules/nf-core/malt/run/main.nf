@@ -13,10 +13,10 @@ process MALT_RUN {
     val mode
 
     output:
-    tuple val(meta), path("*.rma6")                          , emit: rma6
-    tuple val(meta), path("*.{tab,text,sam}"),  optional:true, emit: alignments
-    tuple val(meta), path("*.log")                           , emit: log
-    path "versions.yml"                                      , emit: versions
+    tuple val(meta), path("*.rma6")                                , emit: rma6
+    tuple val(meta), path("*.{tab,text,sam}{,.gz}"), optional:true , emit: alignments
+    tuple val(meta), path("*.log")                                 , emit: log
+    path "versions.yml"                                            , emit: versions
 
     when:
     task.ext.when == null || task.ext.when
