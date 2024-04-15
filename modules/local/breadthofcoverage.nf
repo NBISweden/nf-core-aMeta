@@ -8,7 +8,7 @@ process BREADTHOFCOVERAGE {
         'biocontainers/samtools:1.18--h50ea8bc_1' }"
 
     input:
-    tuple val(meta), path(sam)
+    tuple val(meta), path(sam), path(malt_extract_results, stageAs: 'malt_extract_results')
     path fasta // malt_nt_fasta
     path fai   // malt_nt_fasta
 
@@ -26,16 +26,29 @@ process BREADTHOFCOVERAGE {
     def prefix = task.ext.prefix ?: "${meta.id}"
     // TODO add prefix to filenames
     """
-    echo "${meta.taxid}" > name_list.txt
-    zcat $sam | grep "${meta.taxid}" | uniq > ${meta.taxid}.sam
-    samtools view -bS ${meta.taxid}.sam > ${meta.taxid}.bam
-    samtools sort ${meta.taxid}.bam ${meta.taxid}.sorted.bam
-    samtools index ${meta.taxid}.sorted.bam
-    samtools depth -a ${meta.taxid}.sorted.bam > ${meta.taxid}.breath_of_coverage
+    find malt_extract_results -name "default/readDist/*.rma6_additionalNodeEntries.txt"
+    ls -R malt_extract_results
+    REF_ID="None"
+    REF_ID_FILE=\$( find malt_extract_results -name "default/readDist/*.rma6_additionalNodeEntries.txt" )
+    if [ -f "\$REF_ID_FILE" ]; then
+        REF_ID=\$( awk -F';_' 'NR==2 { print \$2 }' \$REF_ID_FILE )
+        if [ -z \$REF_ID ]; then
+            >&2 echo "Failed to extract ref_id from \$REF_ID_FILE; returning taxid ${meta.taxid}"
+            REF_ID=${meta.taxid}
+        fi
+    else
+        >&2 echo 'No such file "malt_extract_results/default/readDist/*.rma6_additionalNodeEntries.txt"; cannot extract refid'
+    fi
+    echo "\$REF_ID" > name_list.txt
+    zcat $sam | grep "\$REF_ID" | uniq > ${meta.taxid}.sam # TODO - grep safety
+    # samtools view -bS ${meta.taxid}.sam > \$REF_ID.bam
+    samtools sort ${meta.taxid}.sam -O BAM -o \$REF_ID.sorted.bam
+    samtools index \$REF_ID.sorted.bam
+    samtools depth -a \$REF_ID.sorted.bam > \$REF_ID.breath_of_coverage
     grep -w -f name_list.txt $fai | \\
-        awk '{printf(\\"%s:1-%s\\\\n\\", \$1, \$2)}' \\
+        awk '{printf("%s:1-%s\\n", \$1, \$2)}' \\
         > name_list.txt.regions
-    samtools faidx $fasta -r name_list.txt.regions -o ${meta.taxid}.fasta
+    samtools faidx $fasta -r name_list.txt.regions -o \$REF_ID.fasta
     rm ${meta.taxid}.sam
 
     cat <<-END_VERSIONS > versions.yml
