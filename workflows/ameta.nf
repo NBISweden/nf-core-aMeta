@@ -77,6 +77,7 @@ include { MALT_ABUNDANCEMATRIXSAM  } from "$projectDir/modules/local/malt/abunda
 include { MALT_ABUNDANCEMATRIXRMA6 } from "$projectDir/modules/local/malt/abundancematrixrma6"
 
 // Authentic subworkflow
+include { MAKENODELIST           } from "$projectDir/modules/local/makenodelist"
 include { MALTEXTRACT            } from "$projectDir/modules/nf-core/maltextract/main"
 include { SAMTOOLS_FAIDX         } from "$projectDir/modules/nf-core/samtools/faidx/main"
 include { BREADTHOFCOVERAGE      } from "$projectDir/modules/local/breadthofcoverage"
@@ -159,11 +160,12 @@ workflow AMETA {
             ]
         )
     }
+    ch_krakenuniq_db = params.krakenuniq_db ?
+        Channel.fromPath(params.krakenuniq_db, type: 'dir', checkIfExists: true ).collect() :
+        KRAKENUNIQ_BUILD.out.db.collect{ it[1] }
     KRAKENUNIQ_PRELOADEDKRAKENUNIQ(
         CUTADAPT.out.reads,               // [ meta, fastqs ]
-        params.krakenuniq_db ?
-            Channel.fromPath(params.krakenuniq_db, checkIfExists: true ).collect() :
-            KRAKENUNIQ_BUILD.out.db.collect{ it[1] }, // db
+        ch_krakenuniq_db, // db
         params.krakenuniq_ram_chunk_size, // ram_chunk_size
         true,                             // save_output_reads
         true,                             // report_file
@@ -219,7 +221,7 @@ workflow AMETA {
         file(params.malt_seqid2taxid_db, checkIfExists: true),
         file(params.malt_nt_fasta, checkIfExists: true)
     )
-    MALT_BUILD ( // What is the accession2taxid arg?
+    MALT_BUILD (
         MALT_PREPAREDB.out.library,
         [],
         file(params.malt_accession2taxid, checkIfExists: true) // Note: Deprecated. Should be replaced with Megan db.
@@ -237,23 +239,47 @@ workflow AMETA {
     MALT_ABUNDANCEMATRIXRMA6 ( MALT_RUN.out.rma6.collect{ it[1] } )
 
     // SUBWORKFLOW: authentic
-    // Create sample taxid directories // TODO Do I need this?
-    // MAKENODELIST() // TODO meta
-    // MALTEXTRACT(
-    //     MALT_RUN.out.rma6,
-    //     MAKENODELIST.out.node_list, // Join?
-    //     file(params.ncbi_dir, checkIfExists: true)
-    // )
-    // SAMTOOLS_FAIDX( ch_reference.map{ file -> [ [ id: file.baseName ], file ] } ) // TODO check: Should be malt_nt
-    // malt_nt_fasta = ch_reference.join(SAMTOOLS_FAIDX.out.fai).multiMap { meta, fasta, fai ->
-    //         fasta: fasta
-    //         fai  : fai
-    //     }
-    // BREADTHOFCOVERAGE(
-    //     MALT_RUN.out.alignments,
-    //     malt_nt_fasta.fasta.collect(),
-    //     malt_nt_fasta.fai.collect(),
-    // )
+    // Rule: Create_Sample_TaxID_Directories, however taxid is added to meta data instead
+    ch_species_with_taxid = KRAKENUNIQ_FILTER.out.species_tax_id
+        .flatMap{ meta, taxids -> taxids.splitCsv(header: false, sep: '\t').collect{ meta + [ taxid: it[0] ] } }
+    MAKENODELIST (
+        ch_species_with_taxid,
+        ch_krakenuniq_db // Contains the taxDB
+    )
+    MALTEXTRACT (
+        MALT_RUN.out.rma6
+            .combine(
+                MAKENODELIST.out.node_list
+                    .map{ meta, node_list -> [ meta.subMap(meta.keySet() - 'taxid'), meta.taxid, node_list ] },
+                by: 0
+            )
+            .multiMap { meta, rma6, taxid, node_list ->
+                rma6: [ meta + [taxid: taxid], rma6 ]
+                node_list: node_list
+            },
+        file( params.ncbi_dir, type: 'dir' ) // TODO: Causes Malt Extract to automatically download the database. Not suitable for offline.
+    )
+    SAMTOOLS_FAIDX (
+        ch_reference,
+        [ [], [] ] // Empty fai
+    )
+    malt_nt_fasta = ch_reference.join( SAMTOOLS_FAIDX.out.fai )
+        .multiMap { meta, fasta, fai ->
+            fasta: fasta
+            fai  : fai
+        }
+    ch_alignments_per_taxid = MALT_RUN.out.alignments
+        .combine(
+            MALTEXTRACT.out.results
+                .map{ meta, results -> [ meta.subMap(meta.keySet() - 'taxid'), meta.taxid, results ] },
+            by: 0
+        )
+        .map { meta, aln, taxid, results -> [ meta + [taxid: taxid], aln, results ] }
+    BREADTHOFCOVERAGE (
+        ch_alignments_per_taxid,
+        malt_nt_fasta.fasta.collect(),
+        malt_nt_fasta.fai.collect(),
+    )
     // READLENGTHDISTRIBUTION(BREADTHOFCOVERAGE.out.sorted_bam)
     // PMDTOOLS_SCORE(BREADTHOFCOVERAGE.out.sorted_bam)
     // PMDTOOLS_DEAMINATION(BREADTHOFCOVERAGE.out.sorted_bam)
