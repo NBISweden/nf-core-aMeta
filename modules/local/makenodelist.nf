@@ -3,30 +3,26 @@ process MAKENODELIST {
     label 'process_single'
 
     input:
-    tuple val(meta)
-    path tax_db
+    val meta
+    val taxdb_dir // Output of collect, so input is a list of a path
 
     output:
-    tuple val(meta), val(node_list), emit: node_list
-    // path "versions.yml"           , emit: versions
+    tuple val(meta), path("node_list.txt"), emit: node_list
+    // path "versions.yml"                      , emit: versions
 
     when:
     task.ext.when == null || task.ext.when
 
     exec:
-    //TODO: "awk -v var={wildcards.taxid} '{{ if($1==var) print $0 }}' {params.tax_db}/taxDB | cut -f3 > {output.node_list}"
-
+    taxDB = taxdb_dir[0].resolve("taxDB")
+    records = taxDB.splitCsv(header: ['tax_id', 'parent_id', 'name', 'rank'], sep: '\t')
+        .findAll{ it.tax_id == meta.taxid }
+        .collect{ it.name }
+    file("$task.workDir/node_list.txt").text = records.join('\n')
     // script:
-    // def args = task.ext.args ?: ''
-    // def prefix = task.ext.prefix ?: "${meta.id}"
+    // //TODO: "awk -v var={wildcards.taxid} '{{ if($1==var) print $0 }}' {params.tax_db}/taxDB | cut -f3 > {output.node_list}"
     // """
-    // samtools \\
-    //     sort \\
-    //     $args \\
-    //     -@ $task.cpus \\
-    //     -o ${prefix}.bam \\
-    //     -T $prefix \\
-    //     $bam
+    // awk -F \$'\\t' -v var=${taxid_list.text} '{{ if(\$1==var) print $3 }}' > node_list
 
     // cat <<-END_VERSIONS > versions.yml
     // "${task.process}":
