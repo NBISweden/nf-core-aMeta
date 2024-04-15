@@ -27,13 +27,13 @@ process BREADTHOFCOVERAGE {
     // TODO add prefix to filenames
     """
     echo "${meta.taxid}" > name_list.txt
-    zgrep "${meta.taxid}" $sam | uniq > ${meta.taxid}.sam
+    zcat $sam | grep "${meta.taxid}" | uniq > ${meta.taxid}.sam
     samtools view -bS ${meta.taxid}.sam > ${meta.taxid}.bam
     samtools sort ${meta.taxid}.bam ${meta.taxid}.sorted.bam
     samtools index ${meta.taxid}.sorted.bam
     samtools depth -a ${meta.taxid}.sorted.bam > ${meta.taxid}.breath_of_coverage
     grep -w -f name_list.txt $fai | \\
-        awk '{{printf(\\"%s:1-%s\\\\n\\", \$1, \$2)}}' \\
+        awk '{printf(\\"%s:1-%s\\\\n\\", \$1, \$2)}' \\
         > name_list.txt.regions
     samtools faidx $fasta -r name_list.txt.regions -o ${meta.taxid}.fasta
     rm ${meta.taxid}.sam
