@@ -235,7 +235,11 @@ workflow AMETA {
         MALT_RUN.out.alignments,
         KRAKENUNIQ_ABUNDANCEMATRIX.out.species_taxid_list.collect()
     )
-    MALT_ABUNDANCEMATRIXSAM ( MALT_QUANTIFYABUNDANCE.out.counts.collect{ it[1] } )
+    KRAKENUNIQ_ABUNDANCEMATRIX.out.species_names_list
+    MALT_ABUNDANCEMATRIXSAM ( // Note: Implicit merge since it two value channels are used
+        MALT_QUANTIFYABUNDANCE.out.counts.collect{ it[1] },
+        KRAKENUNIQ_ABUNDANCEMATRIX.out.species_names_list.collect{ it[1] }
+    )
     MALT_ABUNDANCEMATRIXRMA6 ( MALT_RUN.out.rma6.collect{ it[1] } )
 
     // SUBWORKFLOW: authentic
