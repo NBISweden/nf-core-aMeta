@@ -236,9 +236,9 @@ workflow AMETA {
         KRAKENUNIQ_ABUNDANCEMATRIX.out.species_taxid_list.collect()
     )
     KRAKENUNIQ_ABUNDANCEMATRIX.out.species_names_list
-    MALT_ABUNDANCEMATRIXSAM ( // Note: Implicit merge since it two value channels are used
+    MALT_ABUNDANCEMATRIXSAM ( // Note: Implicit merge since two value channels are used
         MALT_QUANTIFYABUNDANCE.out.counts.collect{ it[1] },
-        KRAKENUNIQ_ABUNDANCEMATRIX.out.species_names_list.collect{ it[1] }
+        KRAKENUNIQ_ABUNDANCEMATRIX.out.species_names_list
     )
     MALT_ABUNDANCEMATRIXRMA6 ( MALT_RUN.out.rma6.collect{ it[1] } )
 
