@@ -284,9 +284,9 @@ workflow AMETA {
         malt_nt_fasta.fasta.collect(),
         malt_nt_fasta.fai.collect(),
     )
-    // READLENGTHDISTRIBUTION(BREADTHOFCOVERAGE.out.sorted_bam)
-    // PMDTOOLS_SCORE(BREADTHOFCOVERAGE.out.sorted_bam)
-    // PMDTOOLS_DEAMINATION(BREADTHOFCOVERAGE.out.sorted_bam)
+    READLENGTHDISTRIBUTION(BREADTHOFCOVERAGE.out.sorted_bam)
+    PMDTOOLS_SCORE(BREADTHOFCOVERAGE.out.sorted_bam)
+    PMDTOOLS_DEAMINATION(BREADTHOFCOVERAGE.out.sorted_bam)
     // AUTHENTICATIONPLOTS(
     //     node_list // TODO
     //     .join(READLENGTHDISTRIBUTION.out.read_length)
