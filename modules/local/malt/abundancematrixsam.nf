@@ -9,7 +9,7 @@ process MALT_ABUNDANCEMATRIXSAM {
 
     input:
     path counts, stageAs: 'counts/*'
-    path species_names_list, stageAs: 'results/KRAKENUNIQ_ABUNDANCE_MATRIX/unique_species_names_list.txt'
+    path species_names_list, stageAs: 'unique_species_names_list.txt'
 
     output:
     path "malt_abundance_matrix_sam.txt", emit: abundance_matrix_sam
