@@ -26,10 +26,8 @@ process BREADTHOFCOVERAGE {
     def prefix = task.ext.prefix ?: "${meta.id}"
     // TODO add prefix to filenames
     """
-    find malt_extract_results -name "default/readDist/*.rma6_additionalNodeEntries.txt"
-    ls -R malt_extract_results
     REF_ID="None"
-    REF_ID_FILE=\$( find malt_extract_results -name "default/readDist/*.rma6_additionalNodeEntries.txt" )
+    REF_ID_FILE=\$( find -L malt_extract_results -wholename "*/default/readDist/*.rma6_additionalNodeEntries.txt" )
     if [ -f "\$REF_ID_FILE" ]; then
         REF_ID=\$( awk -F';_' 'NR==2 { print \$2 }' \$REF_ID_FILE )
         if [ -z \$REF_ID ]; then
