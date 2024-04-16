@@ -11,7 +11,8 @@ process PMDTOOLS_DEAMINATION {
     tuple val(meta), path(bam)
 
     output:
-    tuple val(meta), path("*.bam"), emit: bam
+    tuple val(meta), path("*.PMD_temp.txt"), emit: pmd_temp
+    tuple val(meta), path("*.PMD_plot.frag.pdf"), emit: pmd_plot_frag
     path "versions.yml"           , emit: versions
 
     when:
@@ -21,13 +22,16 @@ process PMDTOOLS_DEAMINATION {
     def args = task.ext.args ?: ''
     def prefix = task.ext.prefix ?: "${meta.id}"
     """
-    (samtools view {input.bam} || true) \\
+    (samtools view $bam || true) \\
         | pmdtools --platypus --number 2000000 > PMD_temp.txt
     R CMD BATCH \$(which plotPMD)
+    mv PMD_temp.txt ${prefix}.PMD_temp.txt
+    mv PMD_plot.frag.pdf ${prefix}.PMD_plot.frag.pdf
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
-        pmdtools: \$(samtools --version |& sed '1!d ; s/samtools //')
+        pmdtools: \$(pmdtools --version | sed 's/.*v//')
+        samtools: \$(samtools --version |& sed '1!d ; s/samtools //')
     END_VERSIONS
     """
 }

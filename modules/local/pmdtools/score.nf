@@ -21,13 +21,13 @@ process PMDTOOLS_SCORE {
     def args = task.ext.args ?: ''
     def prefix = task.ext.prefix ?: "${meta.id}"
     """
-    (samtools view -h {input.bam} || true) \\
+    (samtools view -h $bam || true) \\
         | pmdtools --printDS > ${prefix}.pmd_scores.txt
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
         pmdtools: \$(pmdtools --version | sed 's/.*v//')
-        pmdtools: \$(samtools --version |& sed '1!d ; s/samtools //')
+        samtools: \$(samtools --version |& sed '1!d ; s/samtools //')
     END_VERSIONS
     """
 }
