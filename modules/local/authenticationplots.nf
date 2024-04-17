@@ -2,23 +2,24 @@ process AUTHENTICATIONPLOTS {
     tag "$meta.id"
     label 'process_single'
 
-    // Using same env as krakenuniq/abundancematrix
-    conda "conda-forge::r-base bioconda::bioconductor-deseq2 bioconda::bioconductor-biocparallel bioconda::bioconductor-tximport bioconda::bioconductor-complexheatmap conda-forge::r-optparse conda-forge::r-ggplot2 conda-forge::r-rcolorbrewer conda-forge::r-pheatmap"
+    conda "bioconda::hops:0.35"
     container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
-        'https://depot.galaxyproject.org/singularity/mulled-v2-8849acf39a43cdd6c839a369a74c0adc823e2f91:ab110436faf952a33575c64dd74615a84011450b-0' :
-        'biocontainers/mulled-v2-8849acf39a43cdd6c839a369a74c0adc823e2f91:ab110436faf952a33575c64dd74615a84011450b-0' }"
+        'https://depot.galaxyproject.org/singularity/hops:0.35--hdfd78af_1' :
+        'biocontainers/hops:0.35--hdfd78af_1' }"
 
     input:
     tuple(
         val(meta),
-        path(node_list, stageAs: 'infiles/*'),
-        path(read_length, stageAs: 'infiles/*'),
-        path(pmd_scores, stageAs: 'infiles/*'),
-        path(breadth_of_coverage, stageAs: 'infiles/*')
+        path(node_list, stageAs: 'node_list.txt'),
+        path(read_length, stageAs:'read_length.txt'),
+        path(pmd_scores, stageAs: 'PMDscores.txt'),
+        path(breadth_of_coverage, stageAs: 'breadth_of_coverage'),
+        path(name_list, stageAs: 'name_list.txt'),
+        path(maltextract_results, stageAs: 'MaltExtract_output')
     )
 
     output:
-    tuple val(meta), path("*.bam"), emit: bam
+    tuple val(meta), path("*.pdf"), emit: pdf
     path "versions.yml"           , emit: versions
 
     when:
@@ -28,7 +29,7 @@ process AUTHENTICATIONPLOTS {
     def args = task.ext.args ?: ''
     def prefix = task.ext.prefix ?: "${meta.id}"
     """
-    authentic.R ${meta.taxid} ${meta.id}.trimmed.rma6 infiles/
+    authentic.R ${meta.taxid} ${meta.id}.trim.rma6 .
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":

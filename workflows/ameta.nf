@@ -284,15 +284,17 @@ workflow AMETA {
         malt_nt_fasta.fasta.collect(),
         malt_nt_fasta.fai.collect(),
     )
-    READLENGTHDISTRIBUTION(BREADTHOFCOVERAGE.out.sorted_bam)
-    PMDTOOLS_SCORE(BREADTHOFCOVERAGE.out.sorted_bam)
-    PMDTOOLS_DEAMINATION(BREADTHOFCOVERAGE.out.sorted_bam)
-    // AUTHENTICATIONPLOTS(
-    //     node_list // TODO
-    //     .join(READLENGTHDISTRIBUTION.out.read_length)
-    //     .join(PMDTOOLS_SCORE.out.pmd_scores)
-    //     .join(BREADTHOFCOVERAGE.out.breadth_of_coverage)
-    // )
+    READLENGTHDISTRIBUTION ( BREADTHOFCOVERAGE.out.sorted_bam )
+    PMDTOOLS_SCORE ( BREADTHOFCOVERAGE.out.sorted_bam )
+    PMDTOOLS_DEAMINATION ( BREADTHOFCOVERAGE.out.sorted_bam )
+    AUTHENTICATIONPLOTS (
+        MAKENODELIST.out.node_list
+            .join( READLENGTHDISTRIBUTION.out.read_length )
+            .join( PMDTOOLS_SCORE.out.pmd_scores )
+            .join( BREADTHOFCOVERAGE.out.breadth_of_coverage )
+            .join( BREADTHOFCOVERAGE.out.name_list )
+            .join( MALTEXTRACT.out.results )
+    )
     // ch_authentication_score = MALT_RUN.out.rma6
     //     .join(MALTEXTRACT.out.results)
     //     .join(BREADTHOFCOVERAGE.out.name_list)
