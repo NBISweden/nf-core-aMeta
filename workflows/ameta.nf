@@ -85,6 +85,7 @@ include { READLENGTHDISTRIBUTION } from "$projectDir/modules/local/readlengthdis
 include { PMDTOOLS_SCORE         } from "$projectDir/modules/local/pmdtools/score"
 include { PMDTOOLS_DEAMINATION   } from "$projectDir/modules/local/pmdtools/deamination"
 include { AUTHENTICATIONPLOTS    } from "$projectDir/modules/local/authenticationplots"
+include { AUTHENTICATIONSCORE    } from "$projectDir/modules/local/authenticationscore"
 
 // summary subworkflow
 
@@ -295,17 +296,20 @@ workflow AMETA {
             .join( BREADTHOFCOVERAGE.out.name_list )
             .join( MALTEXTRACT.out.results )
     )
-    // ch_authentication_score = MALT_RUN.out.rma6
-    //     .join(MALTEXTRACT.out.results)
-    //     .join(BREADTHOFCOVERAGE.out.name_list)
-    //     .multiMap { meta, rma6, maltex_dir, name_list ->
-    //         rma6: [ meta, rma6 ]
-    //         maltex_dir: maltex_dir
-    //         name_list: name_list
-    // }
-    // AUTHENTICATIONSCORE(
-    //     ch_authentication_score // 3 channels
-    // )
+    ch_authentication_score = MALT_RUN.out.rma6
+        .combine(
+            MALTEXTRACT.out.results
+                .join(BREADTHOFCOVERAGE.out.name_list)
+                .join(MAKENODELIST.out.node_list)
+                .map{ meta, maltex_dir, name_list, node_list -> [ meta.subMap(meta.keySet()-['taxid']), meta.taxid, maltex_dir, name_list, node_list ] },
+            by: 0
+        )
+        .map { meta, rma6, taxid, maltex_dir, name_list, node_list ->
+            [ meta + [ taxid: taxid ], rma6, maltex_dir, name_list, node_list ]
+        }
+    AUTHENTICATIONSCORE(
+        ch_authentication_score
+    )
 
     // SUBWORKFLOW: summary
 
