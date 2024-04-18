@@ -34,7 +34,6 @@ process AUTHENTICATIONPLOTS {
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
         r-base: \$(R --version |& sed 's/^.*R version //; s/ .*\$//')
-        pheatmap: \$(Rscript -e "library(pheatmap); cat(as.character(packageVersion('pheatmap')))")
     END_VERSIONS
     """
 }
