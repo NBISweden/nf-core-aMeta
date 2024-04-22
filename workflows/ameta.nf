@@ -210,7 +210,6 @@ workflow AMETA {
         [ [] , [] ],      // Empty fasta reference
         []                // Empty qname file
     )
-    // FASTQ_ALIGN_BOWTIE2.out.bam.join( KRAKENUNIQ_FILTER.out.species_tax_id )
     MAPDAMAGE2 (
         SAMTOOLS_VIEW.out.bam, // bams
         ch_reference.collect{ it[1] } // fasta
@@ -236,7 +235,6 @@ workflow AMETA {
         MALT_RUN.out.alignments,
         KRAKENUNIQ_ABUNDANCEMATRIX.out.species_taxid_list.collect()
     )
-    KRAKENUNIQ_ABUNDANCEMATRIX.out.species_names_list
     MALT_ABUNDANCEMATRIXSAM ( // Note: Implicit merge since two value channels are used
         MALT_QUANTIFYABUNDANCE.out.counts.collect{ it[1] },
         KRAKENUNIQ_ABUNDANCEMATRIX.out.species_names_list
