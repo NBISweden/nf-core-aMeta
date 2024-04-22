@@ -151,7 +151,6 @@ workflow AMETA {
     // SUBWORKFLOW: KRAKENUNIQ
     if( !params.krakenuniq_db ) {
         // TODO: Use Krakenuniq_Download to fetch taxonomy
-        // TODO: Add to versions ch
         KRAKENUNIQ_BUILD (
             [   // Form input tuple.
                 [ id: 'KrakenUniq_DB' ],
@@ -160,37 +159,44 @@ workflow AMETA {
                 file( params.krakenuniq_seq2taxid, checkIfExists: true )
             ]
         )
+        ch_versions = ch_versions.mix(KRAKENUNIQ_BUILD.out.versions)
     }
     ch_krakenuniq_db = params.krakenuniq_db ?
         Channel.fromPath(params.krakenuniq_db, type: 'dir', checkIfExists: true ).collect() :
         KRAKENUNIQ_BUILD.out.db.collect{ it[1] }
     KRAKENUNIQ_PRELOADEDKRAKENUNIQ(
         CUTADAPT.out.reads,               // [ meta, fastqs ]
-        ch_krakenuniq_db, // db
+        ch_krakenuniq_db,                 // db
         params.krakenuniq_ram_chunk_size, // ram_chunk_size
         true,                             // save_output_reads
         true,                             // report_file
         true                              // save_output
     )
+    ch_versions = ch_versions.mix(KRAKENUNIQ_PRELOADEDKRAKENUNIQ.out.versions.first())
     KRAKENUNIQ_FILTER(
         KRAKENUNIQ_PRELOADEDKRAKENUNIQ.out.report,
         params.n_unique_kmers,
         params.n_tax_reads,
         file( params.pathogenomes_found, checkIfExists: true )
     )
+    ch_versions = ch_versions.mix(KRAKENUNIQ_FILTER.out.versions.first())
     KRAKENUNIQ_TOKRONA(
         KRAKENUNIQ_FILTER.out.filtered.join(KRAKENUNIQ_PRELOADEDKRAKENUNIQ.out.classified_assignment)
     )
+    ch_versions = ch_versions.mix(KRAKENUNIQ_TOKRONA.out.versions.first())
     KRONA_KTUPDATETAXONOMY()
+    ch_versions = ch_versions.mix(KRONA_KTUPDATETAXONOMY.out.versions)
     KRONA_KTIMPORTTAXONOMY(
         KRAKENUNIQ_TOKRONA.out.krona,
         params.krona_taxonomy_file ? file( params.krona_taxonomy_file, checkIfExists: true ) : KRONA_KTUPDATETAXONOMY.out.db
     )
+    ch_versions = ch_versions.mix(KRONA_KTIMPORTTAXONOMY.out.versions.first())
     KRAKENUNIQ_ABUNDANCEMATRIX(
         KRAKENUNIQ_FILTER.out.filtered.collect{ it[1] },
         params.n_unique_kmers,
         params.n_tax_reads
     )
+    ch_versions = ch_versions.mix(KRAKENUNIQ_ABUNDANCEMATRIX.out.versions)
 
     // SUBWORKFLOW: Map Damage
     Channel.fromPath( params.bowtie2_seqid2taxid_db, checkIfExists: true )
@@ -210,10 +216,12 @@ workflow AMETA {
         [ [] , [] ],      // Empty fasta reference
         []                // Empty qname file
     )
+    ch_versions = ch_versions.mix(SAMTOOLS_VIEW.out.versions.first())
     MAPDAMAGE2 (
         SAMTOOLS_VIEW.out.bam, // bams
         ch_reference.collect{ it[1] } // fasta
     )
+    ch_versions = ch_versions.mix(MAPDAMAGE2.out.versions.first())
 
     // SUBWORKFLOW: Malt
     MALT_PREPAREDB (
@@ -221,25 +229,31 @@ workflow AMETA {
         file(params.malt_seqid2taxid_db, checkIfExists: true),
         file(params.malt_nt_fasta, checkIfExists: true)
     )
+    ch_versions = ch_versions.mix(MALT_PREPAREDB.out.versions.first())
     MALT_BUILD (
         MALT_PREPAREDB.out.library,
         [],
         file(params.malt_accession2taxid, checkIfExists: true) // Note: Deprecated. Should be replaced with Megan db.
     )
+    ch_versions = ch_versions.mix(MALT_BUILD.out.versions.first())
     MALT_RUN (
         CUTADAPT.out.reads,
         MALT_BUILD.out.index.collect(),
         'BlastN'
     )
+    ch_versions = ch_versions.mix(MALT_RUN.out.versions.first())
     MALT_QUANTIFYABUNDANCE (
         MALT_RUN.out.alignments,
         KRAKENUNIQ_ABUNDANCEMATRIX.out.species_taxid_list.collect()
     )
+    ch_versions = ch_versions.mix(MALT_QUANTIFYABUNDANCE.out.versions.first())
     MALT_ABUNDANCEMATRIXSAM ( // Note: Implicit merge since two value channels are used
         MALT_QUANTIFYABUNDANCE.out.counts.collect{ it[1] },
         KRAKENUNIQ_ABUNDANCEMATRIX.out.species_names_list
     )
+    ch_versions = ch_versions.mix(MALT_ABUNDANCEMATRIXSAM.out.versions)
     MALT_ABUNDANCEMATRIXRMA6 ( MALT_RUN.out.rma6.collect{ it[1] } )
+    ch_versions = ch_versions.mix(MALT_ABUNDANCEMATRIXRMA6.out.versions)
 
     // SUBWORKFLOW: authentic
     // Rule: Create_Sample_TaxID_Directories, however taxid is added to meta data instead
@@ -262,6 +276,7 @@ workflow AMETA {
             },
         file( params.ncbi_dir, type: 'dir' ) // TODO: Causes Malt Extract to automatically download the database. Not suitable for offline.
     )
+    ch_versions = ch_versions.mix(MALTEXTRACT.out.versions.first())
     SAMTOOLS_FAIDX (
         ch_reference,
         [ [], [] ] // Empty fai
@@ -283,9 +298,13 @@ workflow AMETA {
         malt_nt_fasta.fasta.collect(),
         malt_nt_fasta.fai.collect(),
     )
+    ch_versions = ch_versions.mix(BREADTHOFCOVERAGE.out.versions.first())
     READLENGTHDISTRIBUTION ( BREADTHOFCOVERAGE.out.sorted_bam )
+    ch_versions = ch_versions.mix(READLENGTHDISTRIBUTION.out.versions.first())
     PMDTOOLS_SCORE ( BREADTHOFCOVERAGE.out.sorted_bam )
+    ch_versions = ch_versions.mix(PMDTOOLS_SCORE.out.versions.first())
     PMDTOOLS_DEAMINATION ( BREADTHOFCOVERAGE.out.sorted_bam )
+    ch_versions = ch_versions.mix(PMDTOOLS_DEAMINATION.out.versions.first())
     AUTHENTICATIONPLOTS (
         MAKENODELIST.out.node_list
             .join( READLENGTHDISTRIBUTION.out.read_length )
@@ -294,6 +313,7 @@ workflow AMETA {
             .join( BREADTHOFCOVERAGE.out.name_list )
             .join( MALTEXTRACT.out.results )
     )
+    ch_versions = ch_versions.mix(AUTHENTICATIONPLOTS.out.versions.first())
     ch_authentication_score = MALT_RUN.out.rma6
         .combine(
             MALTEXTRACT.out.results
@@ -308,6 +328,7 @@ workflow AMETA {
     AUTHENTICATIONSCORE(
         ch_authentication_score
     )
+    ch_versions = ch_versions.mix(AUTHENTICATIONSCORE.out.versions.first())
 
     // SUBWORKFLOW: summary
 
