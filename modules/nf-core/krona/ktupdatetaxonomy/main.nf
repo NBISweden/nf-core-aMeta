@@ -1,12 +1,11 @@
-def VERSION='2.7.1' // Version information not provided by tool on CLI
-
 process KRONA_KTUPDATETAXONOMY {
     label 'process_single'
 
+    // WARN: Version information not provided by tool on CLI. Please update version string below when bumping container versions.
     conda "${moduleDir}/environment.yml"
     container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
-        'https://depot.galaxyproject.org/singularity/krona:2.7.1--pl526_5' :
-        'biocontainers/krona:2.7.1--pl526_5' }"
+        'https://depot.galaxyproject.org/singularity/krona:2.8--pl5262hdfd78af_2' :
+        'biocontainers/krona:2.8--pl5262hdfd78af_2' }"
 
     output:
     path 'taxonomy/taxonomy.tab', emit: db
@@ -17,6 +16,7 @@ process KRONA_KTUPDATETAXONOMY {
 
     script:
     def args = task.ext.args ?: ''
+    def VERSION = '2.8' // WARN: Version information not provided by tool on CLI. Please update this string when bumping container versions.
     """
     ktUpdateTaxonomy.sh \\
         $args \\

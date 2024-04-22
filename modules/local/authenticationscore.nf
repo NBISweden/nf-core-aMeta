@@ -35,7 +35,7 @@ process AUTHENTICATIONSCORE {
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
-        r-base: \$(R --version |& sed 's/^.*R version //; s/ .*\$//')
+        r-base: \$(R --version |& sed '1!d; s/R version //; s/ .*//')
     END_VERSIONS
     """
 }

@@ -26,7 +26,7 @@ process MALT_QUANTIFYABUNDANCE {
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
-        malt: \$(samtools --version |& sed '1!d ; s/samtools //')
+        python: \$(python --version 2>&1 | sed 's/Python //g')
     END_VERSIONS
     """
 }

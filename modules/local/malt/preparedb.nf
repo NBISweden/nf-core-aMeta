@@ -36,7 +36,7 @@ process MALT_PREPAREDB {
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
-        seqtk: \$( seqtk |& sed 's/^.*Version: //; s/ .*\$//')
+        seqtk: \$( seqtk |& sed '3!d; s/.* //; s/-.*//' )
     END_VERSIONS
     """
 }

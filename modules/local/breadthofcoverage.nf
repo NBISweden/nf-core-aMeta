@@ -51,7 +51,7 @@ process BREADTHOFCOVERAGE {
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
-        samtools: \$(samtools --version |& sed 's/^.*samtools //; s/Using.*\$//')
+        samtools: \$(samtools --version | sed '1!d; s/samtools //')
     END_VERSIONS
     """
 }
