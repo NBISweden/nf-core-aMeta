@@ -333,7 +333,7 @@ workflow AMETA {
     // SUBWORKFLOW: summary
 
     CUSTOM_DUMPSOFTWAREVERSIONS (
-        ch_versions.unique().view{ it.text }.collectFile(name: 'collated_versions.yml')
+        ch_versions.unique().collectFile(name: 'collated_versions.yml')
     )
 
     //
