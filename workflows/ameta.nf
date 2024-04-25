@@ -351,6 +351,7 @@ workflow AMETA {
     ch_multiqc_files = ch_multiqc_files.mix(FASTQC_RAW.out.zip.map { m, zip -> zip })
     ch_multiqc_files = ch_multiqc_files.mix(CUTADAPT.out.log.map { m, log -> log })
     ch_multiqc_files = ch_multiqc_files.mix(FASTQC_TRIM.out.zip.map { m, zip -> zip })
+    ch_multiqc_files = ch_multiqc_files.mix(FASTQ_ALIGN_BOWTIE2.out.log_out.map { m, log -> log })
     ch_multiqc_files = ch_multiqc_files.mix(ch_workflow_summary.collectFile(name: 'workflow_summary_mqc.yaml'))
     ch_multiqc_files = ch_multiqc_files.mix(ch_methods_description.collectFile(name: 'methods_description_mqc.yaml'))
     ch_multiqc_files = ch_multiqc_files.mix(CUSTOM_DUMPSOFTWAREVERSIONS.out.mqc_yml.collect())
