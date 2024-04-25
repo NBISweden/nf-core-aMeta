@@ -331,6 +331,8 @@ workflow AMETA {
     ch_versions = ch_versions.mix(AUTHENTICATIONSCORE.out.versions.first())
 
     // SUBWORKFLOW: summary
+    PLOTAUTHENTICATIONSCORE(AUTHENTICATIONSCORE.out.collect{ it[1] })
+    ch_versions = ch_versions.mix(PLOTAUTHENTICATIONSCORE.out.versions)
 
     CUSTOM_DUMPSOFTWAREVERSIONS (
         ch_versions.unique().collectFile(name: 'collated_versions.yml')
