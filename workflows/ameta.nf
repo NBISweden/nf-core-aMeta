@@ -79,6 +79,7 @@ include { MALT_ABUNDANCEMATRIXRMA6 } from "$projectDir/modules/local/malt/abunda
 // Authentic subworkflow
 include { MAKENODELIST           } from "$projectDir/modules/local/makenodelist"
 include { MALTEXTRACT            } from "$projectDir/modules/nf-core/maltextract/main"
+include { POSTPROCESSINGAMPS     } from "$projectDir/modules/local/postprocessingamps"
 include { SAMTOOLS_FAIDX         } from "$projectDir/modules/nf-core/samtools/faidx/main"
 include { BREADTHOFCOVERAGE      } from "$projectDir/modules/local/breadthofcoverage"
 include { READLENGTHDISTRIBUTION } from "$projectDir/modules/local/readlengthdistribution"
@@ -278,6 +279,8 @@ workflow AMETA {
         file( params.ncbi_dir, type: 'dir' ) // TODO: Causes Malt Extract to automatically download the database. Not suitable for offline.
     )
     ch_versions = ch_versions.mix(MALTEXTRACT.out.versions.first())
+    POSTPROCESSINGAMPS( MAKENODELIST.out.node_list.join(MALTEXTRACT.out.results) )
+    ch_versions = ch_versions.mix(POSTPROCESSINGAMPS.out.versions.first())
     SAMTOOLS_FAIDX (
         ch_reference,
         [ [], [] ] // Empty fai
