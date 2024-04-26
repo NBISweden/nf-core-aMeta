@@ -11,9 +11,10 @@ process PMDTOOLS_DEAMINATION {
     tuple val(meta), path(bam)
 
     output:
-    tuple val(meta), path("*.PMD_temp.txt"), emit: pmd_temp
+    tuple val(meta), path("*.PMD_temp.txt")     , emit: pmd_temp
     tuple val(meta), path("*.PMD_plot.frag.pdf"), emit: pmd_plot_frag
-    path "versions.yml"           , emit: versions
+    tuple val(meta), path(".RData")             , emit: rdata
+    path "versions.yml"                         , emit: versions
 
     when:
     task.ext.when == null || task.ext.when
