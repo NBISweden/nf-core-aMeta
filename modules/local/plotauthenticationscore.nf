@@ -10,7 +10,7 @@ process PLOTAUTHENTICATIONSCORE {
         'biocontainers/mulled-v2-8849acf39a43cdd6c839a369a74c0adc823e2f91:ab110436faf952a33575c64dd74615a84011450b-0' }"
 
     input:
-    path scores, stageAs: 'scores/*'
+    path scores, arity: '1..*'
 
     output:
     path "*.pdf"       , emit: pdf
@@ -22,7 +22,12 @@ process PLOTAUTHENTICATIONSCORE {
 
     script:
     def args = task.ext.args ?: ''
+    def dirs = scores.collectEntries{ txt -> [ txt, "scores/${txt.simpleName}/${txt.name.tokenize(".")[1]}" ] }
+    def link_cmd = dirs.collect{ txt, dir -> "ln -s ../../../$txt $dir/authentication_scores.txt;"}.join("\n    ")
     """
+    mkdir -p ${dirs.values().join(" ")}
+    $link_cmd
+
     plot_score.R scores .
 
     cat <<-END_VERSIONS > versions.yml

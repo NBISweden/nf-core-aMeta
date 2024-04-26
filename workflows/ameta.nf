@@ -88,6 +88,7 @@ include { AUTHENTICATIONPLOTS    } from "$projectDir/modules/local/authenticatio
 include { AUTHENTICATIONSCORE    } from "$projectDir/modules/local/authenticationscore"
 
 // summary subworkflow
+include { PLOTAUTHENTICATIONSCORE } from "$projectDir/modules/local/plotauthenticationscore"
 
 include { MULTIQC                     } from '../modules/nf-core/multiqc/main'
 include { CUSTOM_DUMPSOFTWAREVERSIONS } from '../modules/nf-core/custom/dumpsoftwareversions/main'
@@ -328,10 +329,10 @@ workflow AMETA {
     AUTHENTICATIONSCORE(
         ch_authentication_score
     )
-    ch_versions = ch_versions.mix(AUTHENTICATIONSCORE.out.versions.first())
+    ch_versions = ch_versions.mix( AUTHENTICATIONSCORE.out.versions.first() )
 
     // SUBWORKFLOW: summary
-    PLOTAUTHENTICATIONSCORE(AUTHENTICATIONSCORE.out.collect{ it[1] })
+    PLOTAUTHENTICATIONSCORE( AUTHENTICATIONSCORE.out.authentication_scores.collect{ it[1] } )
     ch_versions = ch_versions.mix(PLOTAUTHENTICATIONSCORE.out.versions)
 
     CUSTOM_DUMPSOFTWAREVERSIONS (
