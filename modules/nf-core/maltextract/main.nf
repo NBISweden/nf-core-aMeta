@@ -21,6 +21,7 @@ process MALTEXTRACT {
 
     script:
     def args = task.ext.args ?: ''
+    def prefix = task.ext.prefix ?: 'results'
     """
     MaltExtract \\
         -Xmx${task.memory.toGiga()}g \\
@@ -28,7 +29,7 @@ process MALTEXTRACT {
         -i ${rma6.join(' ')} \\
         -t $taxon_list \\
         -r $ncbi_dir \\
-        -o results/ \\
+        -o $prefix \\
         $args
 
     cat <<-END_VERSIONS > versions.yml

@@ -1,7 +1,7 @@
 Changes in module 'nf-core/maltextract'
 --- modules/nf-core/maltextract/main.nf
 +++ modules/nf-core/maltextract/main.nf
-@@ -8,13 +8,13 @@
+@@ -8,19 +8,20 @@
          'biocontainers/hops:0.35--hdfd78af_1' }"
  
      input:
@@ -18,5 +18,21 @@ Changes in module 'nf-core/maltextract'
  
      when:
      task.ext.when == null || task.ext.when
+ 
+     script:
+     def args = task.ext.args ?: ''
++    def prefix = task.ext.prefix ?: 'results'
+     """
+     MaltExtract \\
+         -Xmx${task.memory.toGiga()}g \\
+@@ -28,7 +29,7 @@
+         -i ${rma6.join(' ')} \\
+         -t $taxon_list \\
+         -r $ncbi_dir \\
+-        -o results/ \\
++        -o $prefix \\
+         $args
+ 
+     cat <<-END_VERSIONS > versions.yml
 
 ************************************************************
