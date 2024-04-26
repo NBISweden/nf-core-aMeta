@@ -13,7 +13,7 @@ process MALTEXTRACT {
     path ncbi_dir
 
     output:
-    tuple val(meta), path("results"), emit: results
+    tuple val(meta), path("$prefix"), emit: results
     path "versions.yml"             , emit: versions
 
     when:
@@ -21,7 +21,7 @@ process MALTEXTRACT {
 
     script:
     def args = task.ext.args ?: ''
-    def prefix = task.ext.prefix ?: 'results'
+    prefix = task.ext.prefix ?: 'results'
     """
     MaltExtract \\
         -Xmx${task.memory.toGiga()}g \\
