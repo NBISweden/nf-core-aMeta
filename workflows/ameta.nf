@@ -140,7 +140,7 @@ workflow AMETA {
     ch_reference = Channel.fromPath( params.bowtie2_db, checkIfExists: true)
         .map{ file -> [ [ id: file.baseName ], file ] }
     BOWTIE2_BUILD( ch_reference )
-    ch_versions = ch_versions.mix(BOWTIE2_BUILD.out.versions.first())
+    ch_versions = ch_versions.mix(BOWTIE2_BUILD.out.versions)
     FASTQ_ALIGN_BOWTIE2(
         CUTADAPT.out.reads,                   // ch_reads
         BOWTIE2_BUILD.out.index.collect(),    // ch_index
@@ -231,13 +231,13 @@ workflow AMETA {
         file(params.malt_seqid2taxid_db, checkIfExists: true),
         file(params.malt_nt_fasta, checkIfExists: true)
     )
-    ch_versions = ch_versions.mix(MALT_PREPAREDB.out.versions.first())
+    ch_versions = ch_versions.mix(MALT_PREPAREDB.out.versions)
     MALT_BUILD (
         MALT_PREPAREDB.out.library,
         [],
         file(params.malt_accession2taxid, checkIfExists: true) // Note: Deprecated. Should be replaced with Megan db.
     )
-    ch_versions = ch_versions.mix(MALT_BUILD.out.versions.first())
+    ch_versions = ch_versions.mix(MALT_BUILD.out.versions)
     MALT_RUN (
         CUTADAPT.out.reads,
         MALT_BUILD.out.index.collect(),

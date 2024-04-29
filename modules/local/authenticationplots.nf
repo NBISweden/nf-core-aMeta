@@ -29,7 +29,8 @@ process AUTHENTICATIONPLOTS {
     def args = task.ext.args ?: ''
     def prefix = task.ext.prefix ?: "${meta.id}"
     """
-    authentic.R ${meta.taxid} ${meta.id}.trim.rma6 .
+    ID=\$( find -L MaltExtract_output -wholename "*/default/editDistance/*_editDistance.txt" -exec basename {} "_editDistance.txt" \\; )
+    authentic.R ${meta.taxid} "\$ID" .
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
