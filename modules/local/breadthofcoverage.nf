@@ -14,6 +14,7 @@ process BREADTHOFCOVERAGE {
 
     output:
     tuple val(meta), path("name_list.txt")        , emit: name_list
+    tuple val(meta), path("name_list.txt.regions"), emit: name_list_regions
     tuple val(meta), path("*.sorted.bam")         , emit: sorted_bam
     tuple val(meta), path("*.breadth_of_coverage"), emit: breadth_of_coverage
     path "versions.yml"                           , emit: versions
