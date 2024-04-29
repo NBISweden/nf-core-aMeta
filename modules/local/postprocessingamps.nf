@@ -11,8 +11,10 @@ process POSTPROCESSINGAMPS {
     tuple val(meta), path(node_list), path(malt_extract)
 
     output:
-    tuple val(meta), path("$malt_extract/analysis.RData"), emit: rdata
-    path "versions.yml"                                  , emit: versions
+    tuple val(meta), path("$malt_extract/analysis.RData")            , emit: rdata
+    tuple val(meta), path("$malt_extract/heatmap_overview_Wevid.pdf"), emit: heatmap_pdf
+    tuple val(meta), path("$malt_extract/heatmap_overview_Wevid.tsv"), emit: heatmap_tsv
+    path "versions.yml"                                              , emit: versions
 
     when:
     task.ext.when == null || task.ext.when
