@@ -13,10 +13,10 @@ process BREADTHOFCOVERAGE {
     path fai   // malt_nt_fasta
 
     output:
-    tuple val(meta), path("name_list.txt"), emit: name_list
-    tuple val(meta), path("*.sorted.bam"), emit: sorted_bam
-    tuple val(meta), path("*.breath_of_coverage"), emit: breadth_of_coverage
-    path "versions.yml"           , emit: versions
+    tuple val(meta), path("name_list.txt")        , emit: name_list
+    tuple val(meta), path("*.sorted.bam")         , emit: sorted_bam
+    tuple val(meta), path("*.breadth_of_coverage"), emit: breadth_of_coverage
+    path "versions.yml"                           , emit: versions
 
     when:
     task.ext.when == null || task.ext.when
@@ -42,7 +42,7 @@ process BREADTHOFCOVERAGE {
     # samtools view -bS ${meta.taxid}.sam > \$REF_ID.bam
     samtools sort ${meta.taxid}.sam -O BAM -o \$REF_ID.sorted.bam
     samtools index \$REF_ID.sorted.bam
-    samtools depth -a \$REF_ID.sorted.bam > \$REF_ID.breath_of_coverage
+    samtools depth -a \$REF_ID.sorted.bam > \$REF_ID.breadth_of_coverage
     grep -w -f name_list.txt $fai | \\
         awk '{printf("%s:1-%s\\n", \$1, \$2)}' \\
         > name_list.txt.regions
