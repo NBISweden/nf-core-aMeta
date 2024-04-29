@@ -32,7 +32,8 @@
                         "git_sha": "07881e42938b4f0070e864b45d424b01745bc3a4",
                         "installed_by": [
                             "modules"
-                        ]
+                        ],
+                        "patch": "modules/nf-core/cutadapt/cutadapt.diff"
                     },
                     "fastqc": {
                         "branch": "master",
