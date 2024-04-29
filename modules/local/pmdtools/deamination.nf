@@ -13,6 +13,7 @@ process PMDTOOLS_DEAMINATION {
     output:
     tuple val(meta), path("*.PMD_temp.txt")     , emit: pmd_temp
     tuple val(meta), path("*.PMD_plot.frag.pdf"), emit: pmd_plot_frag
+    tuple val(meta), path("*.plotPMD.Rout")     , emit: pmd_plot_rout
     tuple val(meta), path(".RData")             , emit: rdata
     path "versions.yml"                         , emit: versions
 
@@ -28,6 +29,7 @@ process PMDTOOLS_DEAMINATION {
     R CMD BATCH \$(which plotPMD)
     mv PMD_temp.txt ${prefix}.PMD_temp.txt
     mv PMD_plot.frag.pdf ${prefix}.PMD_plot.frag.pdf
+    mv plotPMD.Rout ${prefix}.plotPMD.Rout
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
