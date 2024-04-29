@@ -11,8 +11,8 @@ process PMDTOOLS_SCORE {
     tuple val(meta), path(bam)
 
     output:
-    tuple val(meta), path("*.pmd_scores.txt"), emit: pmd_scores
-    path "versions.yml"                      , emit: versions
+    tuple val(meta), path("*.PMDscores.txt"), emit: pmd_scores
+    path "versions.yml"                     , emit: versions
 
     when:
     task.ext.when == null || task.ext.when
@@ -22,7 +22,7 @@ process PMDTOOLS_SCORE {
     def prefix = task.ext.prefix ?: "${meta.id}"
     """
     (samtools view -h $bam || true) \\
-        | pmdtools --printDS > ${prefix}.pmd_scores.txt
+        | pmdtools --printDS > ${prefix}.PMDscores.txt
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
