@@ -65,6 +65,7 @@ include { KRONA_KTIMPORTTAXONOMY         } from "$projectDir/modules/nf-core/kro
 include { KRAKENUNIQ_ABUNDANCEMATRIX     } from "$projectDir/modules/local/krakenuniq/abundancematrix"
 
 // Damage subworkflow
+include { WRITESEQIDS   } from "$projectDir/modules/local/writeseqids"
 include { SAMTOOLS_VIEW } from "$projectDir/modules/nf-core/samtools/view/main"
 include { MAPDAMAGE2    } from "$projectDir/modules/nf-core/mapdamage2/main"
 
@@ -205,14 +206,12 @@ workflow AMETA {
         .flatMap{ tsv -> tsv.splitCsv(header:false, sep:"\t")*.reverse() }
         .groupTuple() // [ taxid, [ ref1, ref2, ref3 ] ]
         .combine( KRAKENUNIQ_FILTER.out.species_tax_id.flatMap{ meta, txt -> txt.splitText().collect{ [ it.trim(), meta ] } }, by: 0 )
-            // Don't need to collectFile. Just pass the list to $args2
-        // .collectFile(){ taxid, refs, meta -> [ "${meta.id}.${taxid}.seqids", refs.join('\n') ] }
-        // .map { file -> [ file.name.split('.')[0], file ] } // meta_id, refs file
         .map { taxid, seqids, meta -> [ meta, taxid, seqids ] }
         .combine( FASTQ_ALIGN_BOWTIE2.out.bam.join(FASTQ_ALIGN_BOWTIE2.out.bai), by: 0 )
-        // Add taxid and seqids to meta so $args2 can reference it
+        // Add taxid and seqids to meta so samtools view $args2 can reference it
         .map { meta, taxid, seqids, bam, bai -> [ meta + [ taxid: taxid, seqids: seqids ], bam, bai ] }
         .set{ ch_taxid_seqrefs }
+    WRITESEQIDS ( ch_taxid_seqrefs )
     SAMTOOLS_VIEW (
         ch_taxid_seqrefs, // bam files
         [ [] , [] ],      // Empty fasta reference
