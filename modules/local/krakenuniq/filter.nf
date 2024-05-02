@@ -14,11 +14,12 @@ process KRAKENUNIQ_FILTER {
     path pathogenomes_found
 
     output:
-    tuple val(meta), path("${report}.pathogens"), emit: pathogens
-    tuple val(meta), path("${report}.filtered"), emit: filtered
-    tuple val(meta), path("*.taxID.pathogens"), emit: pathogen_tax_id
-    tuple val(meta), path("*.taxID.species"), emit: species_tax_id
-    path "versions.yml"           , emit: versions
+    tuple val(meta), path("${report}.pathogens")    , emit: pathogens
+    tuple val(meta), path("${report}.filtered")     , emit: filtered
+    tuple val(meta), path("*.taxID.pathogens")      , emit: pathogen_tax_id
+    tuple val(meta), path("*.taxID.species")        , emit: species_tax_id
+    tuple val(meta), path("*.krakenuniq_filter.log"), emit: log
+    path "versions.yml"                             , emit: versions
 
     when:
     task.ext.when == null || task.ext.when
@@ -31,7 +32,8 @@ process KRAKENUNIQ_FILTER {
         $report \\
         $n_unique_kmers \\
         $n_tax_reads \\
-        $pathogenomes_found
+        $pathogenomes_found \\
+        | tee ${prefix}.krakenuniq_filter.log
 
     cut -f7 ${report}.pathogens | tail -n +2 > ${prefix}.taxID.pathogens
     cut -f7 ${report}.filtered | tail -n +2 > ${prefix}.taxID.species
