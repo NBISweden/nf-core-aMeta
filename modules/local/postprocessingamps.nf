@@ -14,6 +14,7 @@ process POSTPROCESSINGAMPS {
     tuple val(meta), path("$malt_extract/analysis.RData")            , emit: rdata
     tuple val(meta), path("$malt_extract/heatmap_overview_Wevid.pdf"), emit: heatmap_pdf
     tuple val(meta), path("$malt_extract/heatmap_overview_Wevid.tsv"), emit: heatmap_tsv
+    tuple val(meta), path("$malt_extract/pdf_candidate_profiles")    , emit: pdf_candidate_profiles
     path "versions.yml"                                              , emit: versions
 
     when:
