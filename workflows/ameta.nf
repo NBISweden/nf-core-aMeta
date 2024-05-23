@@ -50,8 +50,6 @@ include { AUTHENTICATIONSCORE    } from "$projectDir/modules/local/authenticatio
 // summary subworkflow
 include { PLOTAUTHENTICATIONSCORE } from "$projectDir/modules/local/plotauthenticationscore"
 
-include { MULTIQC                     } from '../modules/nf-core/multiqc/main'
-include { CUSTOM_DUMPSOFTWAREVERSIONS } from '../modules/nf-core/custom/dumpsoftwareversions/main'
 include { FASTQC                 } from '../modules/nf-core/fastqc/main'
 include { MULTIQC                } from '../modules/nf-core/multiqc/main'
 include { paramsSummaryMap       } from 'plugin/nf-validation'
