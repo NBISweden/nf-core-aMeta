@@ -77,13 +77,12 @@ workflow AMETA {
     // SUBWORKFLOW: QC
     //
     FASTQC_RAW (
-        INPUT_CHECK.out.reads
+        ch_samplesheet
     )
     ch_versions = ch_versions.mix(FASTQC_RAW.out.versions.first())
     CUTADAPT (
         ch_samplesheet
     )
-    ch_multiqc_files = ch_multiqc_files.mix(FASTQC.out.zip.collect{it[1]})
     ch_versions = ch_versions.mix(CUTADAPT.out.versions.first())
     FASTQC_TRIM (
         CUTADAPT.out.reads
