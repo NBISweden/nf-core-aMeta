@@ -33,8 +33,8 @@ step <- (max(df$V2) - min(df$V2)) / N_tiles
 tiles <- c(0:N_tiles) * step
 V4 <- vector()
 for (i in 1:length(tiles)) {
-  df_temp <- df[df$V2 >= tiles[i] & df$V2 < tiles[i + 1], ]
-  V4 <- append(V4, rep(sum(df_temp$V3 > 0) / length(df_temp$V3), dim(df_temp)[1]))
+    df_temp <- df[df$V2 >= tiles[i] & df$V2 < tiles[i + 1], ]
+    V4 <- append(V4, rep(sum(df_temp$V3 > 0) / length(df_temp$V3), dim(df_temp)[1]))
 }
 V4[is.na(V4)] <- 0
 df$V4 <- V4
@@ -59,12 +59,12 @@ hist(df, breaks = length(df), xlab = "Read length", main = "Read length distribu
 
 # PMD SCORES DISTRIBUTION
 if (file.info(paste0(out_dir, "/PMDscores.txt"))$size != 0) {
-  df <- read.delim(paste0(out_dir, "/PMDscores.txt"), header = FALSE, sep = "\t")
-  hist(df$V4, breaks = length(df$V4), main = "Histogram of PMD scores", xlab = "PMDscores")
-  abline(v = 3, col = "red", lty = 2)
+    df <- read.delim(paste0(out_dir, "/PMDscores.txt"), header = FALSE, sep = "\t")
+    hist(df$V4, breaks = length(df$V4), main = "Histogram of PMD scores", xlab = "PMDscores")
+    abline(v = 3, col = "red", lty = 2)
 } else {
-  plot(c(0, 1), c(0, 1), ann = F, bty = "n", type = "n", main = "Histogram of PMD scores")
-  text(x = 0.5, y = 0.5, paste("Not enough reads"), cex = 1.6)
+    plot(c(0, 1), c(0, 1), ann = F, bty = "n", type = "n", main = "Histogram of PMD scores")
+    text(x = 0.5, y = 0.5, paste("Not enough reads"), cex = 1.6)
 }
 
 # PERCENT IDENTITY
