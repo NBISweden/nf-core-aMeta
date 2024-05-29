@@ -49,12 +49,14 @@
                     "malt/build": {
                         "branch": "master",
                         "git_sha": "be8d7b3293cac26cc63e4dbfb364deb8ed6ec7e5",
-                        "installed_by": ["modules"]
+                        "installed_by": ["modules"],
+                        "patch": "modules/nf-core/malt/build/malt-build.diff"
                     },
                     "malt/run": {
                         "branch": "master",
                         "git_sha": "7d3bac628092d1aead36960c4b6ae41302a9f797",
-                        "installed_by": ["modules"]
+                        "installed_by": ["modules"],
+                        "patch": "modules/nf-core/malt/run/malt-run.diff"
                     },
                     "maltextract": {
                         "branch": "master",
