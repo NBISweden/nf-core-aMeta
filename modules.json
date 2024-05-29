@@ -7,7 +7,7 @@
                 "nf-core": {
                     "bowtie2/align": {
                         "branch": "master",
-                        "git_sha": "3c77ca9aac783e76c3614a06db3bfe4fef619bde",
+                        "git_sha": "0fe30831abbc2ed115e46e92330edf38f56edc3d",
                         "installed_by": ["modules"]
                     },
                     "bowtie2/build": {
@@ -18,7 +18,8 @@
                     "cutadapt": {
                         "branch": "master",
                         "git_sha": "07881e42938b4f0070e864b45d424b01745bc3a4",
-                        "installed_by": ["modules"]
+                        "installed_by": ["modules"],
+                        "patch": "modules/nf-core/cutadapt/cutadapt.diff"
                     },
                     "fastqc": {
                         "branch": "master",
@@ -32,7 +33,7 @@
                     },
                     "krakenuniq/preloadedkrakenuniq": {
                         "branch": "master",
-                        "git_sha": "8bbaa881ab9e59f3e18680550d65d52339640630",
+                        "git_sha": "9de9365c3ca6071ec01705919f6667c718ef47b4",
                         "installed_by": ["modules"]
                     },
                     "krona/ktimporttaxonomy": {
@@ -52,13 +53,14 @@
                     },
                     "malt/run": {
                         "branch": "master",
-                        "git_sha": "be8d7b3293cac26cc63e4dbfb364deb8ed6ec7e5",
+                        "git_sha": "7d3bac628092d1aead36960c4b6ae41302a9f797",
                         "installed_by": ["modules"]
                     },
                     "maltextract": {
                         "branch": "master",
                         "git_sha": "3f5420aa22e00bd030a2556dfdffc9e164ec0ec5",
-                        "installed_by": ["modules"]
+                        "installed_by": ["modules"],
+                        "patch": "modules/nf-core/maltextract/maltextract.diff"
                     },
                     "mapdamage2": {
                         "branch": "master",
@@ -72,32 +74,32 @@
                     },
                     "samtools/faidx": {
                         "branch": "master",
-                        "git_sha": "ce0b1aed7d504883061e748f492a31bf44c5777c",
+                        "git_sha": "f153f1f10e1083c49935565844cccb7453021682",
                         "installed_by": ["modules"]
                     },
                     "samtools/flagstat": {
                         "branch": "master",
-                        "git_sha": "8d8f0ae52d6c9342bd41c33dda0b74b07e32153d",
+                        "git_sha": "f4596fe0bdc096cf53ec4497e83defdb3a94ff62",
                         "installed_by": ["modules"]
                     },
                     "samtools/idxstats": {
                         "branch": "master",
-                        "git_sha": "8d8f0ae52d6c9342bd41c33dda0b74b07e32153d",
+                        "git_sha": "f4596fe0bdc096cf53ec4497e83defdb3a94ff62",
                         "installed_by": ["modules"]
                     },
                     "samtools/index": {
                         "branch": "master",
-                        "git_sha": "8d8f0ae52d6c9342bd41c33dda0b74b07e32153d",
+                        "git_sha": "f4596fe0bdc096cf53ec4497e83defdb3a94ff62",
                         "installed_by": ["modules"]
                     },
                     "samtools/sort": {
                         "branch": "master",
-                        "git_sha": "8d8f0ae52d6c9342bd41c33dda0b74b07e32153d",
+                        "git_sha": "4352dbdb09ec40db71e9b172b97a01dcf5622c26",
                         "installed_by": ["modules"]
                     },
                     "samtools/stats": {
                         "branch": "master",
-                        "git_sha": "8d8f0ae52d6c9342bd41c33dda0b74b07e32153d",
+                        "git_sha": "f4596fe0bdc096cf53ec4497e83defdb3a94ff62",
                         "installed_by": ["modules"]
                     },
                     "samtools/view": {
