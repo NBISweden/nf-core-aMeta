@@ -17,7 +17,7 @@
                     },
                     "cutadapt": {
                         "branch": "master",
-                        "git_sha": "07881e42938b4f0070e864b45d424b01745bc3a4",
+                        "git_sha": "6618151ed69274863dc6fe6d2920afa90abaca1f",
                         "installed_by": ["modules"],
                         "patch": "modules/nf-core/cutadapt/cutadapt.diff"
                     },
@@ -48,7 +48,7 @@
                     },
                     "malt/build": {
                         "branch": "master",
-                        "git_sha": "be8d7b3293cac26cc63e4dbfb364deb8ed6ec7e5",
+                        "git_sha": "7d3bac628092d1aead36960c4b6ae41302a9f797",
                         "installed_by": ["modules"],
                         "patch": "modules/nf-core/malt/build/malt-build.diff"
                     },
@@ -60,7 +60,7 @@
                     },
                     "maltextract": {
                         "branch": "master",
-                        "git_sha": "3f5420aa22e00bd030a2556dfdffc9e164ec0ec5",
+                        "git_sha": "8840ece9ee7528480dec95796e017be02ada0dc0",
                         "installed_by": ["modules"],
                         "patch": "modules/nf-core/maltextract/maltextract.diff"
                     },

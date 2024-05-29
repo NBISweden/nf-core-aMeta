@@ -4,8 +4,8 @@ process MALT_BUILD {
 
     conda "${moduleDir}/environment.yml"
     container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
-        'https://depot.galaxyproject.org/singularity/malt:0.61--hdfd78af_0' :
-        'biocontainers/malt:0.61--hdfd78af_0' }"
+        'https://depot.galaxyproject.org/singularity/malt:0.62--hdfd78af_0' :
+        'biocontainers/malt:0.62--hdfd78af_0' }"
 
     input:
     path fastas
@@ -22,7 +22,6 @@ process MALT_BUILD {
 
     script:
     def args = task.ext.args ?: ''
-
     def igff = gff ? "-igff ${gff}" : ""
 
     """
@@ -38,6 +37,18 @@ process MALT_BUILD {
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
         malt: \$( malt-build --help |& sed '/version/!d; s/.*version //; s/,.*//' )
+    END_VERSIONS
+    """
+
+    stub:
+    def args = task.ext.args ?: ''
+    """
+    touch malt-build.log
+    mkdir malt_index/
+
+    cat <<-END_VERSIONS > versions.yml
+    "${task.process}":
+        malt: \$(malt-run --help  2>&1 | grep -o 'version.* ' | cut -f 1 -d ',' | cut -f2 -d ' ')
     END_VERSIONS
     """
 }
