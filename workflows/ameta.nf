@@ -123,6 +123,7 @@ workflow AMETA {
         KRAKENUNIQ_BUILD.out.db.collect{ it[1] }
     KRAKENUNIQ_PRELOADEDKRAKENUNIQ(
         CUTADAPT.out.reads,               // [ meta, fastqs ]
+        'fastq',                          // fastq/fasta
         ch_krakenuniq_db,                 // db
         params.krakenuniq_ram_chunk_size, // ram_chunk_size
         true,                             // save_output_reads
