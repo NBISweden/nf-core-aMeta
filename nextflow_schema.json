@@ -40,7 +40,7 @@
                 },
                 "bowtie2_db": {
                     "type": "string",
-                    "description": "Bowtie2 fasta and helping files for following up microbial pathogens",
+                    "description": "Bowtie2 fasta and helping files for following up microbial pathogens. See README for paths to prebuilt indices.",
                     "format": "file-path",
                     "fa_icon": "fas fa-file",
                     "pattern": "^\\S+\\.f(ast|n|)a$"
@@ -49,19 +49,19 @@
                     "type": "string",
                     "pattern": "^\\S+\\.map$",
                     "format": "file-path",
-                    "description": "A reference to pathogen map",
+                    "description": "A reference to pathogen map. See README for paths to prebuilt indices.",
                     "fa_icon": "fas fa-database"
                 },
                 "pathogenomes_found": {
                     "type": "string",
-                    "description": "TODO: Clearer explanation",
+                    "description": "See README for paths to prebuilt indices.",
                     "pattern": "^\\S+\\.tab$",
                     "format": "file-path",
                     "fa_icon": "fas fa-database"
                 },
                 "krakenuniq_db": {
                     "type": "string",
-                    "description": "KrakenUniq NCBI NT database",
+                    "description": "KrakenUniq NCBI NT database. See README for paths to prebuilt indices.",
                     "format": "directory-path",
                     "fa_icon": "fas fa-database"
                 },
@@ -72,21 +72,21 @@
                 },
                 "malt_nt_fasta": {
                     "type": "string",
-                    "description": "A reference fasta",
+                    "description": "A reference fasta. See README for paths to prebuilt indices.",
                     "pattern": "^\\S+\\.f(ast|n|)a$",
                     "format": "file-path",
                     "fa_icon": "fas fa-file"
                 },
                 "malt_seqid2taxid_db": {
                     "type": "string",
-                    "description": "A reference to pathogen map",
+                    "description": "A reference to pathogen map. See README for paths to prebuilt indices.",
                     "pattern": "^\\S+\\.map$",
                     "format": "file-path",
                     "fa_icon": "fas fa-database"
                 },
                 "malt_accession2taxid": {
                     "type": "string",
-                    "description": "A reference to taxid map",
+                    "description": "A reference to taxid map. See README for paths to prebuilt indices.",
                     "pattern": "^\\S+\\.map$",
                     "format": "file-path",
                     "fa_icon": "fas fa-database"
