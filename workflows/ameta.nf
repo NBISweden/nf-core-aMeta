@@ -273,23 +273,21 @@ workflow AMETA {
             .join( BREADTHOFCOVERAGE.out.breadth_of_coverage )
             .join( BREADTHOFCOVERAGE.out.name_list )
             .join( MALTEXTRACT.out.results )
-            .join( PMDTOOLS_SCORE.out.pmd_scores )
     )
     ch_versions = ch_versions.mix(AUTHENTICATIONPLOTS.out.versions.first())
     ch_authentication_score = MALT_RUN.out.rma6
         .combine(
             MALTEXTRACT.out.results
-                .join(BREADTHOFCOVERAGE.out.name_list)
-                .join(MAKENODELIST.out.node_list)
-                .map{ meta, maltex_dir, name_list, node_list -> [ meta.subMap(meta.keySet()-['taxid']), meta.taxid, maltex_dir, name_list, node_list ] },
+                .join( BREADTHOFCOVERAGE.out.name_list )
+                .join( MAKENODELIST.out.node_list )
+                .join( PMDTOOLS_SCORE.out.pmd_scores )
+                .map{ meta, maltex_dir, name_list, node_list, pmd -> [ meta - meta.subMap('taxid'), meta.taxid, maltex_dir, name_list, node_list, pmd ] },
             by: 0
         )
-        .map { meta, rma6, taxid, maltex_dir, name_list, node_list ->
-            [ meta + [ taxid: taxid ], rma6, maltex_dir, name_list, node_list ]
+        .map { meta, rma6, taxid, maltex_dir, name_list, node_list, pmd ->
+            [ meta + [ taxid: taxid ], rma6, maltex_dir, name_list, node_list, pmd ]
         }
-    AUTHENTICATIONSCORE(
-        ch_authentication_score
-    )
+    AUTHENTICATIONSCORE( ch_authentication_score )
     ch_versions = ch_versions.mix( AUTHENTICATIONSCORE.out.versions.first() )
 
     // SUBWORKFLOW: summary
