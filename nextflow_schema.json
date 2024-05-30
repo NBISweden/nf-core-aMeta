@@ -65,18 +65,6 @@
                     "format": "directory-path",
                     "fa_icon": "fas fa-database"
                 },
-                "krakenuniq_library_dir": {
-                    "type": "string",
-                    "description": "TODO Testing only"
-                },
-                "krakenuniq_taxonomy_dir": {
-                    "type": "string",
-                    "description": "TODO Testing only"
-                },
-                "krakenuniq_seq2taxid": {
-                    "type": "string",
-                    "description": "TODO Testing only"
-                },
                 "krakenuniq_ram_chunk_size": {
                     "type": "string",
                     "default": "72GB",
