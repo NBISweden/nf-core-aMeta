@@ -106,21 +106,22 @@ workflow AMETA {
     ch_versions = ch_versions.mix(FASTQ_ALIGN_BOWTIE2.out.versions)
 
     // SUBWORKFLOW: KRAKENUNIQ
-    if( !params.krakenuniq_db ) {
-        // TODO: Use Krakenuniq_Download to fetch taxonomy
-        KRAKENUNIQ_BUILD (
-            [   // Form input tuple.
-                [ id: 'KrakenUniq_DB' ],
-                file( params.krakenuniq_library_dir, checkIfExists: true ),
-                file( params.krakenuniq_taxonomy_dir, checkIfExists: true ),
-                file( params.krakenuniq_seq2taxid, checkIfExists: true )
+    ch_kdb = Channel.fromPath(params.krakenuniq_db, checkIfExists: true, type: 'dir')
+        .branch { dbdir ->
+            as_is: dbdir.resolve('database.kdb').exists()
+            build: true
+        }
+    ch_kdb.build.map { dbdir ->
+            [
+                [ id: dbdir.name ],              // meta
+                dbdir.resolve('library'),        // library dir
+                dbdir.resolve('taxonomy'),       // taxonomy dir
+                dbdir.resolve('seqid2taxid.map') // custom map
             ]
-        )
-        ch_versions = ch_versions.mix(KRAKENUNIQ_BUILD.out.versions)
-    }
-    ch_krakenuniq_db = params.krakenuniq_db ?
-        Channel.fromPath(params.krakenuniq_db, type: 'dir', checkIfExists: true ).collect() :
-        KRAKENUNIQ_BUILD.out.db.collect{ it[1] }
+        }.set { ch_kdb_build }
+    KRAKENUNIQ_BUILD ( ch_kdb_build )
+    ch_versions = ch_versions.mix(KRAKENUNIQ_BUILD.out.versions)
+    ch_krakenuniq_db = KRAKENUNIQ_BUILD.out.db.mix(ch_kdb.as_is).collect{ it[1] }
     KRAKENUNIQ_PRELOADEDKRAKENUNIQ(
         CUTADAPT.out.reads,               // [ meta, fastqs ]
         'fastq',                          // fastq/fasta
