@@ -231,7 +231,9 @@ workflow AMETA {
                 rma6: [ meta + [taxid: taxid], rma6 ]
                 node_list: node_list
             },
-        file( params.ncbi_dir, type: 'dir' ) // TODO: Causes Malt Extract to automatically download the database. Not suitable for offline.
+        file( params.ncbi_dir, type: 'dir' ) // * checkIfExists skipped as Malt will create the folder contents automatically,
+        // unless offline in which case a local path to `ncbi` dir should be supplied with the ncbi.tre and ncbi.map inside
+        // Download from https://github.com/husonlab/megan-ce/tree/master/src/megan/resources/files
     )
     ch_versions = ch_versions.mix(MALTEXTRACT.out.versions.first())
     POSTPROCESSINGAMPS( MAKENODELIST.out.node_list.join(MALTEXTRACT.out.results) )

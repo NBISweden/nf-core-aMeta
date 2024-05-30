@@ -110,10 +110,11 @@
                 },
                 "ncbi_dir": {
                     "type": "string",
-                    "description": "A path for downloading NCBI taxonomy files (performed automatically)",
+                    "description": "A path for downloading NCBI taxonomy files (performed automatically). If working offline please download the ncbi.tre and ncbi.map from https://github.com/husonlab/megan-ce/tree/master/src/megan/resources/files and supply the local \"ncbi\" directory these files are in.",
                     "default": "ncbi",
                     "format": "directory-path",
-                    "fa_icon": "fas fa-folder-open"
+                    "fa_icon": "fas fa-folder-open",
+                    "pattern": "ncbi$"
                 },
                 "outdir": {
                     "type": "string",
