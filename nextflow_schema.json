@@ -40,9 +40,10 @@
                 },
                 "bowtie2_db": {
                     "type": "string",
-                    "description": "Bowtie2 index and helping files for following up microbial pathogens",
-                    "format": "directory-path",
-                    "fa_icon": "fas fa-database"
+                    "description": "Bowtie2 fasta and helping files for following up microbial pathogens",
+                    "format": "file-path",
+                    "fa_icon": "fas fa-file",
+                    "pattern": "^\\S+\\.f(ast|n|)a$"
                 },
                 "bowtie2_seqid2taxid_db": {
                     "type": "string",
@@ -84,7 +85,7 @@
                 "malt_nt_fasta": {
                     "type": "string",
                     "description": "A reference fasta",
-                    "pattern": "^\\S+\\.fasta$",
+                    "pattern": "^\\S+\\.f(ast|n|)a$",
                     "format": "file-path",
                     "fa_icon": "fas fa-file"
                 },
