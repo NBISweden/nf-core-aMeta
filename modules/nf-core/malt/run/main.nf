@@ -22,10 +22,9 @@ process MALT_RUN {
     task.ext.when == null || task.ext.when
 
     script:
-    assert mode in ['Unknown', 'BlastN', 'BlastP', 'BlastX', 'Classifier']
     def args = task.ext.args ?: ''
     def prefix = task.ext.prefix ?: "${meta.id}"
-
+    assert mode in ['Unknown', 'BlastN', 'BlastP', 'BlastX', 'Classifier']
     """
     malt-run \\
         --numThreads $task.cpus \\
@@ -35,6 +34,20 @@ process MALT_RUN {
         $args \\
         --inFile ${fastqs.join(' ')} \\
         --index $index/ |& tee ${prefix}-malt-run.log
+
+    cat <<-END_VERSIONS > versions.yml
+    "${task.process}":
+        malt: \$( malt-run --help |& sed '/version/!d; s/.*version //; s/,.*//' )
+    END_VERSIONS
+    """
+
+    stub:
+    def args = task.ext.args ?: ''
+    def prefix = task.ext.prefix ?: "${meta.id}"
+    """
+    touch ${prefix}-malt-run.log
+    touch ${prefix}.rma6
+    touch ${prefix}.sam
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":

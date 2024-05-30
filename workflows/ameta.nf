@@ -4,48 +4,6 @@
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
 
-include { paramsSummaryLog; paramsSummaryMap } from 'plugin/nf-validation'
-
-def logo = NfcoreTemplate.logo(workflow, params.monochrome_logs)
-def citation = '\n' + WorkflowMain.citation(workflow) + '\n'
-def summary_params = paramsSummaryMap(workflow)
-
-// Print parameter summary log to screen
-log.info logo + paramsSummaryLog(workflow) + citation
-
-// WorkflowAmeta.initialise(params, log)
-
-/*
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    CONFIG FILES
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-*/
-
-ch_multiqc_config          = Channel.fromPath("$projectDir/assets/multiqc_config.yml", checkIfExists: true)
-ch_multiqc_custom_config   = params.multiqc_config ? Channel.fromPath( params.multiqc_config, checkIfExists: true ) : Channel.empty()
-ch_multiqc_logo            = params.multiqc_logo   ? Channel.fromPath( params.multiqc_logo, checkIfExists: true ) : Channel.empty()
-ch_multiqc_custom_methods_description = params.multiqc_methods_description ? file(params.multiqc_methods_description, checkIfExists: true) : file("$projectDir/assets/methods_description_template.yml", checkIfExists: true)
-
-/*
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    IMPORT LOCAL MODULES/SUBWORKFLOWS
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-*/
-
-//
-// SUBWORKFLOW: Consisting of a mix of local and nf-core/modules
-//
-include { INPUT_CHECK } from '../subworkflows/local/input_check'
-
-/*
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    IMPORT NF-CORE MODULES/SUBWORKFLOWS
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-*/
-
-//
-// MODULE: Installed directly from nf-core/modules
-//
 // QC subworkflow
 include { FASTQC as FASTQC_RAW        } from '../modules/nf-core/fastqc/main'
 include { FASTQC as FASTQC_TRIM       } from '../modules/nf-core/fastqc/main'
@@ -92,8 +50,6 @@ include { AUTHENTICATIONSCORE    } from "$projectDir/modules/local/authenticatio
 // summary subworkflow
 include { PLOTAUTHENTICATIONSCORE } from "$projectDir/modules/local/plotauthenticationscore"
 
-include { MULTIQC                     } from '../modules/nf-core/multiqc/main'
-include { CUSTOM_DUMPSOFTWAREVERSIONS } from '../modules/nf-core/custom/dumpsoftwareversions/main'
 include { FASTQC                 } from '../modules/nf-core/fastqc/main'
 include { MULTIQC                } from '../modules/nf-core/multiqc/main'
 include { paramsSummaryMap       } from 'plugin/nf-validation'
@@ -121,13 +77,12 @@ workflow AMETA {
     // SUBWORKFLOW: QC
     //
     FASTQC_RAW (
-        INPUT_CHECK.out.reads
+        ch_samplesheet
     )
     ch_versions = ch_versions.mix(FASTQC_RAW.out.versions.first())
     CUTADAPT (
         ch_samplesheet
     )
-    ch_multiqc_files = ch_multiqc_files.mix(FASTQC.out.zip.collect{it[1]})
     ch_versions = ch_versions.mix(CUTADAPT.out.versions.first())
     FASTQC_TRIM (
         CUTADAPT.out.reads
@@ -151,23 +106,25 @@ workflow AMETA {
     ch_versions = ch_versions.mix(FASTQ_ALIGN_BOWTIE2.out.versions)
 
     // SUBWORKFLOW: KRAKENUNIQ
-    if( !params.krakenuniq_db ) {
-        // TODO: Use Krakenuniq_Download to fetch taxonomy
-        KRAKENUNIQ_BUILD (
-            [   // Form input tuple.
-                [ id: 'KrakenUniq_DB' ],
-                file( params.krakenuniq_library_dir, checkIfExists: true ),
-                file( params.krakenuniq_taxonomy_dir, checkIfExists: true ),
-                file( params.krakenuniq_seq2taxid, checkIfExists: true )
+    ch_kdb = Channel.fromPath(params.krakenuniq_db, checkIfExists: true, type: 'dir')
+        .branch { dbdir ->
+            as_is: dbdir.resolve('database.kdb').exists()
+            build: true
+        }
+    ch_kdb.build.map { dbdir ->
+            [
+                [ id: dbdir.name ],              // meta
+                dbdir.resolve('library'),        // library dir
+                dbdir.resolve('taxonomy'),       // taxonomy dir
+                dbdir.resolve('seqid2taxid.map') // custom map
             ]
-        )
-        ch_versions = ch_versions.mix(KRAKENUNIQ_BUILD.out.versions)
-    }
-    ch_krakenuniq_db = params.krakenuniq_db ?
-        Channel.fromPath(params.krakenuniq_db, type: 'dir', checkIfExists: true ).collect() :
-        KRAKENUNIQ_BUILD.out.db.collect{ it[1] }
+        }.set { ch_kdb_build }
+    KRAKENUNIQ_BUILD ( ch_kdb_build )
+    ch_versions = ch_versions.mix(KRAKENUNIQ_BUILD.out.versions)
+    ch_krakenuniq_db = KRAKENUNIQ_BUILD.out.db.mix(ch_kdb.as_is).collect{ it[1] }
     KRAKENUNIQ_PRELOADEDKRAKENUNIQ(
         CUTADAPT.out.reads,               // [ meta, fastqs ]
+        'fastq',                          // fastq/fasta
         ch_krakenuniq_db,                 // db
         params.krakenuniq_ram_chunk_size, // ram_chunk_size
         true,                             // save_output_reads
@@ -274,7 +231,9 @@ workflow AMETA {
                 rma6: [ meta + [taxid: taxid], rma6 ]
                 node_list: node_list
             },
-        file( params.ncbi_dir, type: 'dir' ) // TODO: Causes Malt Extract to automatically download the database. Not suitable for offline.
+        file( params.ncbi_dir, type: 'dir' ) // * checkIfExists skipped as Malt will create the folder contents automatically,
+        // unless offline in which case a local path to `ncbi` dir should be supplied with the ncbi.tre and ncbi.map inside
+        // Download from https://github.com/husonlab/megan-ce/tree/master/src/megan/resources/files
     )
     ch_versions = ch_versions.mix(MALTEXTRACT.out.versions.first())
     POSTPROCESSINGAMPS( MAKENODELIST.out.node_list.join(MALTEXTRACT.out.results) )
@@ -319,17 +278,16 @@ workflow AMETA {
     ch_authentication_score = MALT_RUN.out.rma6
         .combine(
             MALTEXTRACT.out.results
-                .join(BREADTHOFCOVERAGE.out.name_list)
-                .join(MAKENODELIST.out.node_list)
-                .map{ meta, maltex_dir, name_list, node_list -> [ meta.subMap(meta.keySet()-['taxid']), meta.taxid, maltex_dir, name_list, node_list ] },
+                .join( BREADTHOFCOVERAGE.out.name_list )
+                .join( MAKENODELIST.out.node_list )
+                .join( PMDTOOLS_SCORE.out.pmd_scores )
+                .map{ meta, maltex_dir, name_list, node_list, pmd -> [ meta - meta.subMap('taxid'), meta.taxid, maltex_dir, name_list, node_list, pmd ] },
             by: 0
         )
-        .map { meta, rma6, taxid, maltex_dir, name_list, node_list ->
-            [ meta + [ taxid: taxid ], rma6, maltex_dir, name_list, node_list ]
+        .map { meta, rma6, taxid, maltex_dir, name_list, node_list, pmd ->
+            [ meta + [ taxid: taxid ], rma6, maltex_dir, name_list, node_list, pmd ]
         }
-    AUTHENTICATIONSCORE(
-        ch_authentication_score
-    )
+    AUTHENTICATIONSCORE( ch_authentication_score )
     ch_versions = ch_versions.mix( AUTHENTICATIONSCORE.out.versions.first() )
 
     // SUBWORKFLOW: summary

@@ -14,13 +14,13 @@ n_tax_reads <- as.integer(args[4])
 krakenuniq_outputs <- list.files(path = input_dir)
 df <- list()
 for (i in 1:length(krakenuniq_outputs)) {
-  df[[i]] <- read.delim(paste0(input_dir, "/", krakenuniq_outputs[i]), comment.char = "#", header = TRUE)
-  if (dim(df[[i]])[1] != 0) {
-    df[[i]]$SAMPLE <- krakenuniq_outputs[i]
-    df[[i]] <- na.omit(df[[i]])
-  } else {
-    next
-  }
+    df[[i]] <- read.delim(paste0(input_dir, "/", krakenuniq_outputs[i]), comment.char = "#", header = TRUE)
+    if (dim(df[[i]])[1] != 0) {
+        df[[i]]$SAMPLE <- krakenuniq_outputs[i]
+        df[[i]] <- na.omit(df[[i]])
+    } else {
+        next
+    }
 }
 merged <- Reduce(rbind, df)
 merged$taxName <- trimws(as.character(merged$taxName))
@@ -33,13 +33,13 @@ unique_taxids <- unique(merged$taxID)
 # Computing abundance matrix
 abundance_matrix <- matrix(NA, ncol = length(unique_samples), nrow = length(unique_species))
 for (i in 1:length(unique_species)) {
-  for (j in 1:length(unique_samples)) {
-    if (length(merged[merged$taxName == unique_species[i] & merged$SAMPLE == unique_samples[j], ]$taxReads) == 0) {
-      abundance_matrix[i, j] <- 0
-    } else {
-      abundance_matrix[i, j] <- merged[merged$taxName == unique_species[i] & merged$SAMPLE == unique_samples[j], ]$taxReads
+    for (j in 1:length(unique_samples)) {
+        if (length(merged[merged$taxName == unique_species[i] & merged$SAMPLE == unique_samples[j], ]$taxReads) == 0) {
+            abundance_matrix[i, j] <- 0
+        } else {
+            abundance_matrix[i, j] <- merged[merged$taxName == unique_species[i] & merged$SAMPLE == unique_samples[j], ]$taxReads
+        }
     }
-  }
 }
 rownames(abundance_matrix) <- unique_species
 colnames(abundance_matrix) <- unique_samples

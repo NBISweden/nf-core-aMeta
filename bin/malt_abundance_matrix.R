@@ -13,7 +13,7 @@ species_names <- read.delim("unique_species_names_list.txt", header = FALSE, sep
 files <- list.files(path = args[1])
 df <- list()
 for (i in 1:length(files)) {
-  df[[i]] <- as.numeric(scan(paste0(args[1], "/", files[i]), what = "character"))
+    df[[i]] <- as.numeric(scan(paste0(args[1], "/", files[i]), what = "character"))
 }
 merged <- as.data.frame(Reduce(cbind, df))
 colnames(merged) <- gsub(".sam_counts", "", files)

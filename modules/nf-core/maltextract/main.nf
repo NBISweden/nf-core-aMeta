@@ -13,15 +13,14 @@ process MALTEXTRACT {
     path ncbi_dir
 
     output:
-    tuple val(meta), path("$prefix"), emit: results
-    path "versions.yml"             , emit: versions
+    tuple val(meta), path("results")      , emit: results
+    path "versions.yml"                   , emit: versions
 
     when:
     task.ext.when == null || task.ext.when
 
     script:
     def args = task.ext.args ?: ''
-    prefix = task.ext.prefix ?: 'results'
     """
     MaltExtract \\
         -Xmx${task.memory.toGiga()}g \\
@@ -29,7 +28,7 @@ process MALTEXTRACT {
         -i ${rma6.join(' ')} \\
         -t $taxon_list \\
         -r $ncbi_dir \\
-        -o $prefix \\
+        -o results/ \\
         $args
 
     cat <<-END_VERSIONS > versions.yml

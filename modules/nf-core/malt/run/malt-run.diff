@@ -10,7 +10,7 @@ Changes in module 'nf-core/malt/run'
 
 --- modules/nf-core/malt/run/main.nf
 +++ modules/nf-core/malt/run/main.nf
-@@ -4,38 +4,41 @@
+@@ -4,16 +4,17 @@
  
      conda "${moduleDir}/environment.yml"
      container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
@@ -25,23 +25,17 @@ Changes in module 'nf-core/malt/run'
 +    val mode
  
      output:
--    tuple val(meta), path("*.rma6")                          , emit: rma6
--    tuple val(meta), path("*.{tab,text,sam}"),  optional:true, emit: alignments
--    tuple val(meta), path("*.log")                           , emit: log
--    path "versions.yml"                                      , emit: versions
-+    tuple val(meta), path("*.rma6")                                , emit: rma6
+     tuple val(meta), path("*.rma6")                                , emit: rma6
+-    tuple val(meta), path("*.{tab,text,sam,tab.gz,text.gz,sam.gz}"),  optional:true, emit: alignments
 +    tuple val(meta), path("*.{tab,text,sam}{,.gz}"), optional:true , emit: alignments
-+    tuple val(meta), path("*.log")                                 , emit: log
-+    path "versions.yml"                                            , emit: versions
+     tuple val(meta), path("*.log")                                 , emit: log
+     path "versions.yml"                                            , emit: versions
  
-     when:
-     task.ext.when == null || task.ext.when
- 
+@@ -23,18 +24,20 @@
      script:
-+    assert mode in ['Unknown', 'BlastN', 'BlastP', 'BlastX', 'Classifier']
      def args = task.ext.args ?: ''
      def prefix = task.ext.prefix ?: "${meta.id}"
- 
++    assert mode in ['Unknown', 'BlastN', 'BlastP', 'BlastX', 'Classifier']
      """
      malt-run \\
 -        -t $task.cpus \\
@@ -55,6 +49,15 @@ Changes in module 'nf-core/malt/run'
          --inFile ${fastqs.join(' ')} \\
 -        --index $index/ |&tee ${prefix}-malt-run.log
 +        --index $index/ |& tee ${prefix}-malt-run.log
+ 
+     cat <<-END_VERSIONS > versions.yml
+     "${task.process}":
+-        malt: \$(malt-run --help  2>&1 | grep -o 'version.* ' | cut -f 1 -d ',' | cut -f2 -d ' ')
++        malt: \$( malt-run --help |& sed '/version/!d; s/.*version //; s/,.*//' )
+     END_VERSIONS
+     """
+ 
+@@ -48,7 +51,7 @@
  
      cat <<-END_VERSIONS > versions.yml
      "${task.process}":

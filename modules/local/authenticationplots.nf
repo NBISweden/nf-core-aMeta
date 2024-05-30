@@ -8,15 +8,7 @@ process AUTHENTICATIONPLOTS {
         'biocontainers/hops:0.35--hdfd78af_1' }"
 
     input:
-    tuple(
-        val(meta),
-        path(node_list, stageAs: 'node_list.txt'),
-        path(read_length, stageAs:'read_length.txt'),
-        path(pmd_scores, stageAs: 'PMDscores.txt'),
-        path(breadth_of_coverage, stageAs: 'breadth_of_coverage'),
-        path(name_list, stageAs: 'name_list.txt'),
-        path(maltextract_results, stageAs: 'MaltExtract_output')
-    )
+    tuple( val(meta), path(node_list, stageAs: 'node_list.txt'), path(read_length, stageAs:'read_length.txt'), path(pmd_scores, stageAs: 'PMDscores.txt'), path(breadth_of_coverage, stageAs: 'breadth_of_coverage'), path(name_list, stageAs: 'name_list.txt'), path(maltextract_results, stageAs: 'MaltExtract_output') )
 
     output:
     tuple val(meta), path("*.pdf"), emit: pdf

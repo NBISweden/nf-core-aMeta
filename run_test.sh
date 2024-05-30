@@ -2,11 +2,11 @@
 
 # TODO: Remove me
 
-nextflow run barebones.nf \
+nextflow run main.nf \
     -resume \
     -ansi-log false \
-    -profile test,singularity \
+    -profile test,docker \
     -dump-channels \
     --outdir results \
-    --db_cache 'results/database_cache' \
+    --db_cache 'work/database_cache' \
     --validate_params false
