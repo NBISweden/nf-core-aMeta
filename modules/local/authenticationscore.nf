@@ -8,13 +8,7 @@ process AUTHENTICATIONSCORE {
         'biocontainers/hops:0.35--hdfd78af_1' }"
 
     input:
-    tuple (
-        val(meta),
-        path(rma6),
-        path(malt_extract_dir),
-        path(name_list),
-        path(node_list, stageAs: 'node_list.txt')
-    )
+    tuple ( val(meta), path(rma6), path(malt_extract_dir), path(name_list), path(node_list, stageAs: 'node_list.txt') )
 
     output:
     tuple val(meta), path("*.authentication_scores.txt"), emit: authentication_scores
