@@ -273,6 +273,7 @@ workflow AMETA {
             .join( BREADTHOFCOVERAGE.out.breadth_of_coverage )
             .join( BREADTHOFCOVERAGE.out.name_list )
             .join( MALTEXTRACT.out.results )
+            .join( PMDTOOLS_SCORE.out.pmd_scores )
     )
     ch_versions = ch_versions.mix(AUTHENTICATIONPLOTS.out.versions.first())
     ch_authentication_score = MALT_RUN.out.rma6
