@@ -8,7 +8,7 @@ process AUTHENTICATIONSCORE {
         'biocontainers/hops:0.35--hdfd78af_1' }"
 
     input:
-    tuple ( val(meta), path(rma6), path(malt_extract_dir), path(name_list), path(node_list, stageAs: 'node_list.txt') )
+    tuple ( val(meta), path(rma6), path(malt_extract_dir), path(name_list), path(node_list, stageAs: 'node_list.txt'), path(pmd_scores) )
 
     output:
     tuple val(meta), path("*.authentication_scores.txt"), emit: authentication_scores
@@ -21,10 +21,12 @@ process AUTHENTICATIONSCORE {
     def args = task.ext.args ?: ''
     def prefix = task.ext.prefix ?: "${meta.id}"
     """
-    score.R $rma6 \\
+    score.R \\
+        $rma6 \\
         $malt_extract_dir \\
         $name_list \\
-        .
+        . \\
+        $pmd_scores
     mv authentication_scores.txt ${prefix}.authentication_scores.txt
 
     cat <<-END_VERSIONS > versions.yml
