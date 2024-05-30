@@ -1,7 +1,7 @@
 process PLOTAUTHENTICATIONSCORE {
     label 'process_single'
 
-    conda "conda-forge::r-base conda-forge::r-pheatmap"
+    conda "conda-forge::r-base:4.3.3 conda-forge::r-pheatmap:1.0.12"
     container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
         'oras://community.wave.seqera.io/library/r-pheatmap:1.0.12--d3684be95dc92871' :
         'community.wave.seqera.io/library/r-pheatmap:1.0.12--07179b67a66cda52' }"
