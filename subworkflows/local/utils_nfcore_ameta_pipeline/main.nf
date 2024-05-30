@@ -75,7 +75,7 @@ workflow PIPELINE_INITIALISATION {
     //
     // Custom validation for pipeline parameters
     //
-    validateInputParameters()
+    // validateInputParameters()
 
     //
     // Create channel from input file provided through params.input
@@ -154,9 +154,9 @@ workflow PIPELINE_COMPLETION {
 //
 // Check and validate pipeline parameters
 //
-def validateInputParameters() {
-    genomeExistsError()
-}
+// def validateInputParameters() {
+//     // genomeExistsError()
+// }
 
 //
 // Validate channels from input samplesheet
