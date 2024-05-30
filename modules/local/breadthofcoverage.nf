@@ -27,7 +27,6 @@ process BREADTHOFCOVERAGE {
     script:
     def args = task.ext.args ?: ''
     def prefix = task.ext.prefix ?: "${meta.id}"
-    // TODO add prefix to filenames
     """
     REF_ID="None"
     REF_ID_FILE=\$( find -L malt_extract_results -wholename "*/default/readDist/*.rma6_additionalNodeEntries.txt" )
