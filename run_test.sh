@@ -8,5 +8,4 @@ nextflow run main.nf \
     -profile test,docker \
     -dump-channels \
     --outdir results \
-    --db_cache 'work/database_cache' \
-    --validate_params false
+    --db_cache 'work/database_cache'
