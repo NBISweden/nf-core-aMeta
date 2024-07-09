@@ -47,7 +47,6 @@
                 },
                 "bowtie2_seqid2taxid_db": {
                     "type": "string",
-                    "pattern": "^\\S+\\.map$",
                     "format": "file-path",
                     "description": "A reference to pathogen map. See README for paths to prebuilt indices.",
                     "fa_icon": "fas fa-database"
@@ -80,14 +79,12 @@
                 "malt_seqid2taxid_db": {
                     "type": "string",
                     "description": "A reference to pathogen map. See README for paths to prebuilt indices.",
-                    "pattern": "^\\S+\\.map$",
                     "format": "file-path",
                     "fa_icon": "fas fa-database"
                 },
                 "malt_accession2taxid": {
                     "type": "string",
                     "description": "A reference to taxid map. See README for paths to prebuilt indices.",
-                    "pattern": "^\\S+\\.map$",
                     "format": "file-path",
                     "fa_icon": "fas fa-database"
                 },
