@@ -109,17 +109,16 @@ workflow AMETA {
     ch_kdb = Channel.fromPath(params.krakenuniq_db, checkIfExists: true, type: 'dir')
         .branch { dbdir ->
             as_is: dbdir.resolve('database.kdb').exists()
+                return [ [ id: dbdir.name ], dbdir ] // meta, db
             build: true
+                return [
+                    [ id: dbdir.name ],              // meta
+                    dbdir.resolve('library'),        // library dir
+                    dbdir.resolve('taxonomy'),       // taxonomy dir
+                    dbdir.resolve('seqid2taxid.map') // custom map
+                ]
         }
-    ch_kdb.build.map { dbdir ->
-            [
-                [ id: dbdir.name ],              // meta
-                dbdir.resolve('library'),        // library dir
-                dbdir.resolve('taxonomy'),       // taxonomy dir
-                dbdir.resolve('seqid2taxid.map') // custom map
-            ]
-        }.set { ch_kdb_build }
-    KRAKENUNIQ_BUILD ( ch_kdb_build )
+    KRAKENUNIQ_BUILD ( ch_kdb.build )
     ch_versions = ch_versions.mix(KRAKENUNIQ_BUILD.out.versions)
     ch_krakenuniq_db = KRAKENUNIQ_BUILD.out.db.mix(ch_kdb.as_is).collect{ it[1] }
     KRAKENUNIQ_PRELOADEDKRAKENUNIQ(
