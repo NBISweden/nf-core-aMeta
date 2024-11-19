@@ -7,52 +7,52 @@
 // QC subworkflow
 include { FASTQC as FASTQC_RAW        } from '../modules/nf-core/fastqc/main'
 include { FASTQC as FASTQC_TRIM       } from '../modules/nf-core/fastqc/main'
-include { CUTADAPT                    } from "$projectDir/modules/nf-core/cutadapt/main"
+include { CUTADAPT                    } from '../modules/nf-core/cutadapt/main'
 
 // Align subworkflow
-include { BOWTIE2_BUILD       } from "$projectDir/modules/nf-core/bowtie2/build/main"
-include { FASTQ_ALIGN_BOWTIE2 } from "$projectDir/subworkflows/nf-core/fastq_align_bowtie2/main"
+include { BOWTIE2_BUILD       } from '../modules/nf-core/bowtie2/build/main'
+include { FASTQ_ALIGN_BOWTIE2 } from '../subworkflows/nf-core/fastq_align_bowtie2/main'
 
 // Krakenuniq subworkflow
-include { KRAKENUNIQ_PRELOADEDKRAKENUNIQ } from "$projectDir/modules/nf-core/krakenuniq/preloadedkrakenuniq/"
-include { KRAKENUNIQ_BUILD               } from "$projectDir/modules/nf-core/krakenuniq/build/main"
-include { KRAKENUNIQ_FILTER              } from "$projectDir/modules/local/krakenuniq/filter"
-include { KRAKENUNIQ_TOKRONA             } from "$projectDir/modules/local/krakenuniq/tokrona"
-include { KRONA_KTUPDATETAXONOMY         } from "$projectDir/modules/nf-core/krona/ktupdatetaxonomy/main"
-include { KRONA_KTIMPORTTAXONOMY         } from "$projectDir/modules/nf-core/krona/ktimporttaxonomy/main"
-include { KRAKENUNIQ_ABUNDANCEMATRIX     } from "$projectDir/modules/local/krakenuniq/abundancematrix"
+include { KRAKENUNIQ_PRELOADEDKRAKENUNIQ } from '../modules/nf-core/krakenuniq/preloadedkrakenuniq/'
+include { KRAKENUNIQ_BUILD               } from '../modules/nf-core/krakenuniq/build/main'
+include { KRAKENUNIQ_FILTER              } from '../modules/local/krakenuniq/filter'
+include { KRAKENUNIQ_TOKRONA             } from '../modules/local/krakenuniq/tokrona'
+include { KRONA_KTUPDATETAXONOMY         } from '../modules/nf-core/krona/ktupdatetaxonomy/main'
+include { KRONA_KTIMPORTTAXONOMY         } from '../modules/nf-core/krona/ktimporttaxonomy/main'
+include { KRAKENUNIQ_ABUNDANCEMATRIX     } from '../modules/local/krakenuniq/abundancematrix'
 
 // Damage subworkflow
-include { WRITESEQIDS   } from "$projectDir/modules/local/writeseqids"
-include { SAMTOOLS_VIEW } from "$projectDir/modules/nf-core/samtools/view/main"
-include { MAPDAMAGE2    } from "$projectDir/modules/nf-core/mapdamage2/main"
+include { WRITESEQIDS   } from '../modules/local/writeseqids'
+include { SAMTOOLS_VIEW } from '../modules/nf-core/samtools/view/main'
+include { MAPDAMAGE2    } from '../modules/nf-core/mapdamage2/main'
 
 // Malt subworkflow
-include { MALT_PREPAREDB           } from "$projectDir/modules/local/malt/preparedb"
-include { MALT_BUILD               } from "$projectDir/modules/nf-core/malt/build/main"
-include { MALT_RUN                 } from "$projectDir/modules/nf-core/malt/run/main"
-include { MALT_QUANTIFYABUNDANCE   } from "$projectDir/modules/local/malt/quantifyabundance"
-include { MALT_ABUNDANCEMATRIXSAM  } from "$projectDir/modules/local/malt/abundancematrixsam"
-include { MALT_ABUNDANCEMATRIXRMA6 } from "$projectDir/modules/local/malt/abundancematrixrma6"
+include { MALT_PREPAREDB           } from '../modules/local/malt/preparedb'
+include { MALT_BUILD               } from '../modules/nf-core/malt/build/main'
+include { MALT_RUN                 } from '../modules/nf-core/malt/run/main'
+include { MALT_QUANTIFYABUNDANCE   } from '../modules/local/malt/quantifyabundance'
+include { MALT_ABUNDANCEMATRIXSAM  } from '../modules/local/malt/abundancematrixsam'
+include { MALT_ABUNDANCEMATRIXRMA6 } from '../modules/local/malt/abundancematrixrma6'
 
 // Authentic subworkflow
-include { MAKENODELIST           } from "$projectDir/modules/local/makenodelist"
-include { MALTEXTRACT            } from "$projectDir/modules/nf-core/maltextract/main"
-include { POSTPROCESSINGAMPS     } from "$projectDir/modules/local/postprocessingamps"
-include { SAMTOOLS_FAIDX         } from "$projectDir/modules/nf-core/samtools/faidx/main"
-include { BREADTHOFCOVERAGE      } from "$projectDir/modules/local/breadthofcoverage"
-include { READLENGTHDISTRIBUTION } from "$projectDir/modules/local/readlengthdistribution"
-include { PMDTOOLS_SCORE         } from "$projectDir/modules/local/pmdtools/score"
-include { PMDTOOLS_DEAMINATION   } from "$projectDir/modules/local/pmdtools/deamination"
-include { AUTHENTICATIONPLOTS    } from "$projectDir/modules/local/authenticationplots"
-include { AUTHENTICATIONSCORE    } from "$projectDir/modules/local/authenticationscore"
+include { MAKENODELIST           } from '../modules/local/makenodelist'
+include { MALTEXTRACT            } from '../modules/nf-core/maltextract/main'
+include { POSTPROCESSINGAMPS     } from '../modules/local/postprocessingamps'
+include { SAMTOOLS_FAIDX         } from '../modules/nf-core/samtools/faidx/main'
+include { BREADTHOFCOVERAGE      } from '../modules/local/breadthofcoverage'
+include { READLENGTHDISTRIBUTION } from '../modules/local/readlengthdistribution'
+include { PMDTOOLS_SCORE         } from '../modules/local/pmdtools/score'
+include { PMDTOOLS_DEAMINATION   } from '../modules/local/pmdtools/deamination'
+include { AUTHENTICATIONPLOTS    } from '../modules/local/authenticationplots'
+include { AUTHENTICATIONSCORE    } from '../modules/local/authenticationscore'
 
 // summary subworkflow
-include { PLOTAUTHENTICATIONSCORE } from "$projectDir/modules/local/plotauthenticationscore"
+include { PLOTAUTHENTICATIONSCORE } from '../modules/local/plotauthenticationscore'
 
 include { FASTQC                 } from '../modules/nf-core/fastqc/main'
 include { MULTIQC                } from '../modules/nf-core/multiqc/main'
-include { paramsSummaryMap       } from 'plugin/nf-validation'
+include { paramsSummaryMap       } from 'plugin/nf-schema'
 include { paramsSummaryMultiqc   } from '../subworkflows/nf-core/utils_nfcore_pipeline'
 include { softwareVersionsToYAML } from '../subworkflows/nf-core/utils_nfcore_pipeline'
 include { methodsDescriptionText } from '../subworkflows/local/utils_nfcore_ameta_pipeline'
@@ -67,12 +67,10 @@ workflow AMETA {
 
     take:
     ch_samplesheet // channel: samplesheet read in from --input
-
     main:
 
     ch_versions = Channel.empty()
     ch_multiqc_files = Channel.empty()
-
     //
     // SUBWORKFLOW: QC
     //
@@ -219,17 +217,19 @@ workflow AMETA {
         ch_species_with_taxid,
         ch_krakenuniq_db // Contains the taxDB
     )
+    malt_run = MALT_RUN.out.rma6
+        .combine(
+            MAKENODELIST.out.node_list
+                .map{ meta, node_list -> [ meta.subMap(meta.keySet() - 'taxid'), meta.taxid, node_list ] },
+            by: 0
+        )
+        .multiMap { meta, rma6, taxid, node_list ->
+            rma6: [ meta + [taxid: taxid], rma6 ]
+            node_list: node_list
+        }
     MALTEXTRACT (
-        MALT_RUN.out.rma6
-            .combine(
-                MAKENODELIST.out.node_list
-                    .map{ meta, node_list -> [ meta.subMap(meta.keySet() - 'taxid'), meta.taxid, node_list ] },
-                by: 0
-            )
-            .multiMap { meta, rma6, taxid, node_list ->
-                rma6: [ meta + [taxid: taxid], rma6 ]
-                node_list: node_list
-            },
+        malt_run.rma6,
+        malt_run.node_list,
         file( params.ncbi_dir, type: 'dir' ) // * checkIfExists skipped as Malt will create the folder contents automatically,
         // unless offline in which case a local path to `ncbi` dir should be supplied with the ncbi.tre and ncbi.map inside
         // Download from https://github.com/husonlab/megan-ce/tree/master/src/megan/resources/files
@@ -242,7 +242,7 @@ workflow AMETA {
         [ [], [] ] // Empty fai
     )
     malt_nt_fasta = ch_reference.join( SAMTOOLS_FAIDX.out.fai )
-        .multiMap { meta, fasta, fai ->
+        .multiMap { _meta, fasta, fai ->
             fasta: fasta
             fai  : fai
         }
@@ -299,10 +299,11 @@ workflow AMETA {
     softwareVersionsToYAML(ch_versions)
         .collectFile(
             storeDir: "${params.outdir}/pipeline_info",
-            name: 'nf_core_pipeline_software_mqc_versions.yml',
+            name: 'nf_core_'  + 'pipeline_software_' +  'mqc_'  + 'versions.yml',
             sort: true,
             newLine: true
         ).set { ch_collated_versions }
+
 
     //
     // MODULE: MultiQC
@@ -319,15 +320,14 @@ workflow AMETA {
     summary_params      = paramsSummaryMap(
         workflow, parameters_schema: "nextflow_schema.json")
     ch_workflow_summary = Channel.value(paramsSummaryMultiqc(summary_params))
-
+    ch_multiqc_files = ch_multiqc_files.mix(
+        ch_workflow_summary.collectFile(name: 'workflow_summary_mqc.yaml'))
     ch_multiqc_custom_methods_description = params.multiqc_methods_description ?
         file(params.multiqc_methods_description, checkIfExists: true) :
         file("$projectDir/assets/methods_description_template.yml", checkIfExists: true)
     ch_methods_description                = Channel.value(
         methodsDescriptionText(ch_multiqc_custom_methods_description))
 
-    ch_multiqc_files = ch_multiqc_files.mix(
-        ch_workflow_summary.collectFile(name: 'workflow_summary_mqc.yaml'))
     ch_multiqc_files = ch_multiqc_files.mix(ch_collated_versions)
     ch_multiqc_files = ch_multiqc_files.mix(
         ch_methods_description.collectFile(
@@ -340,12 +340,14 @@ workflow AMETA {
         ch_multiqc_files.collect(),
         ch_multiqc_config.toList(),
         ch_multiqc_custom_config.toList(),
-        ch_multiqc_logo.toList()
+        ch_multiqc_logo.toList(),
+        [],
+        []
     )
 
-    emit:
-    multiqc_report = MULTIQC.out.report.toList() // channel: /path/to/multiqc_report.html
+    emit:multiqc_report = MULTIQC.out.report.toList() // channel: /path/to/multiqc_report.html
     versions       = ch_versions                 // channel: [ path(versions.yml) ]
+
 }
 
 /*
