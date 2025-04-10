@@ -7,3 +7,7 @@ testing/
 testing*
 *.pyc
 database_cache/
+
+# pixi environments
+.pixi
+*.egg-info
