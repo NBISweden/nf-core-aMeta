@@ -7,6 +7,7 @@ version = "0.1.0"
 
 [tasks]
 test-local = "nextflow run main.nf -resume -ansi-log false -profile test,docker -dump-channels --outdir results --db_cache 'work/database_cache'"
+clean-local = "nextflow clean -f $(nextflow log -q); find work -type d -empty -delete"
 
 [dependencies]
 nextflow = ">=24.10.6,<25"
