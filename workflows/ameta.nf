@@ -92,14 +92,24 @@ workflow AMETA {
     //
     ch_reference = Channel.fromPath( params.bowtie2_db, checkIfExists: true)
         .map{ file -> [ [ id: file.baseName ], file ] }
-    BOWTIE2_BUILD( ch_reference )
+    ch_bowtie2 = ch_reference
+        .branch { meta, fasta ->
+            def indices = ['1.bt2l','2.bt2l','3.bt2l','4.bt2l','rev.1.bt2l','rev.2.bt2l'].collect{ suffix -> file("${fasta.parent}/${fasta.baseName}.${suffix}") }
+            def indices_present = indices.every { file -> file.exists() }
+            with_idx: indices_present
+                return tuple(meta, fasta.parent)
+            ref_only: !indices_present
+                return tuple(meta, fasta)
+        }
+    BOWTIE2_BUILD(ch_bowtie2.ref_only)
+    ch_bt2index = BOWTIE2_BUILD.out.index.mix(ch_bowtie2.with_idx).collect()
     ch_versions = ch_versions.mix(BOWTIE2_BUILD.out.versions)
     FASTQ_ALIGN_BOWTIE2(
-        CUTADAPT.out.reads,                   // ch_reads
-        BOWTIE2_BUILD.out.index.collect(),    // ch_index
-        false,                                // save unaligned
-        false,                                // sort bam
-        ch_reference.collect()                // ch_fasta
+        CUTADAPT.out.reads,    // ch_reads
+        ch_bt2index,           // ch_index
+        false,                 // save unaligned
+        false,                 // sort bam
+        ch_reference.collect() // ch_fasta
     )
     ch_versions = ch_versions.mix(FASTQ_ALIGN_BOWTIE2.out.versions)
 
@@ -172,8 +182,8 @@ workflow AMETA {
     )
     ch_versions = ch_versions.mix(SAMTOOLS_VIEW.out.versions.first())
     MAPDAMAGE2 (
-        SAMTOOLS_VIEW.out.bam, // bams
-        ch_reference.collect{ it[1] } // fasta
+        SAMTOOLS_VIEW.out.bam,
+        ch_reference.collect{ meta, fasta -> fasta }
     )
     ch_versions = ch_versions.mix(MAPDAMAGE2.out.versions.first())
 
@@ -235,11 +245,19 @@ workflow AMETA {
     ch_versions = ch_versions.mix(MALTEXTRACT.out.versions.first())
     POSTPROCESSINGAMPS( MAKENODELIST.out.node_list.join(MALTEXTRACT.out.results) )
     ch_versions = ch_versions.mix(POSTPROCESSINGAMPS.out.versions.first())
+    ch_samtoolsfa = ch_reference
+        .branch { meta, fasta ->
+            def fai = file("${fasta}.fai")
+            with_idx: fai.exists()
+                return tuple(meta, fai)
+            fas_only: !fai.exists()
+                return tuple(meta, fasta)
+        }
     SAMTOOLS_FAIDX (
-        ch_reference,
+        ch_samtoolsfa.fas_only,
         [ [], [] ] // Empty fai
     )
-    malt_nt_fasta = ch_reference.join( SAMTOOLS_FAIDX.out.fai )
+    malt_nt_fasta = ch_reference.join( SAMTOOLS_FAIDX.out.fai.mix(ch_samtoolsfa.with_idx) )
         .multiMap { meta, fasta, fai ->
             fasta: fasta
             fai  : fai
