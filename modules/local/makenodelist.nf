@@ -21,7 +21,7 @@ process MAKENODELIST {
 
     script:
     """
-    awk '\$1 == "${meta.tax_id}" { print \$3 }' ${taxdb_dir}/taxDB > node_list.txt
+    awk -F'\\t' '\$1 == "${meta.taxid}" { print \$3 }' ${taxdb_dir}/taxDB > node_list.txt
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
