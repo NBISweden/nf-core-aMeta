@@ -6,8 +6,9 @@ platforms = ["linux-64", "osx-arm64"]
 version = "0.1.0"
 
 [tasks]
+test-local = "nextflow run main.nf -resume -ansi-log false -profile test,docker -dump-channels --outdir results --db_cache 'work/database_cache'"
 
 [dependencies]
-nextflow = ">=24.10.5,<25"
-nf-core = ">=3.2.0,<4"
+nextflow = ">=24.10.6,<25"
+nf-core = ">=3.2.1,<4"
 nf-test = ">=0.9.2,<0.10"
