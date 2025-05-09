@@ -94,7 +94,7 @@ workflow AMETA {
         .map{ file -> [ [ id: file.baseName ], file ] }
     ch_bowtie2 = ch_reference
         .branch { meta, fasta ->
-            def indices = ['1.bt2l','2.bt2l','3.bt2l','4.bt2l','rev.1.bt2l','rev.2.bt2l'].collect{ suffix -> file("${fasta.parent}/${fasta.baseName}.${suffix}") }
+            def indices = ['1.bt2l','2.bt2l','3.bt2l','4.bt2l','rev.1.bt2l','rev.2.bt2l'].collect{ suffix -> file("${fasta}.${suffix}") }
             def indices_present = indices.every { file -> file.exists() }
             with_idx: indices_present
                 return tuple(meta, fasta.parent)
