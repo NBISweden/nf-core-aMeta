@@ -42,7 +42,7 @@ if (dim(ku_abundance)[1] > 1 & dim(ku_abundance)[2] > 1) {
 dev.off()
 
 
-# NORMALIZE BY SEQUENCING SEPTH
+# NORMALIZE BY SEQUENCING DEPTH
 for (i in 1:dim(ku_abundance)[2]) {
     ku_abundance[, i] <- ku_abundance[, i] / sum(ku_abundance[, i])
 }
