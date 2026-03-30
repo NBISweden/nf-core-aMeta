@@ -1,13 +1,14 @@
 [workspace]
 authors = ["Mahesh Binzer-Panchal <mahesh.binzer-panchal@nbis.se>"]
 channels = ["conda-forge", "bioconda"]
-name = "nf-core-ameta"
+name = "nf-core-aMeta"
 platforms = ["linux-64", "osx-arm64"]
 version = "0.1.0"
 
 [tasks]
 test-local = "nextflow run main.nf -resume -ansi-log false -profile test,docker -dump-channels --outdir results --db_cache 'work/database_cache'"
-clean-local = "nextflow clean -f $(nextflow log -q); find work -type d -empty -delete"
+clean-work = "nextflow clean -f last && find work -type d -empty -delete"
+clean-all = "git clean -e .pixi -fdx"
 
 [dependencies]
 nextflow = ">=25.10.4,<26"
