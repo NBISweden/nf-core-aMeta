@@ -1,0 +1,21 @@
+[workspace]
+authors = ["Mahesh Binzer-Panchal <mahesh.binzer-panchal@nbis.se>"]
+channels = ["conda-forge", "bioconda"]
+name = "nf-core-aMeta"
+platforms = ["osx-arm64", "linux-64"]
+version = "0.1.0"
+
+[tasks]
+# Development
+clean-all = "git clean -e .pixi -fdx"
+clean-work = "nextflow clean -f last && find work -type d -empty -delete"
+test = "nextflow run main.nf -resume -profile test,docker --outdir results --db_cache 'work/database_cache'"
+# Nextflow
+# nf-core
+nf-core-sync = "nf-core pipelines sync"
+update-modules = "nf-core modules update"
+
+[dependencies]
+nextflow = ">=25.10.4,<26"
+nf-core = ">=3.5.2,<4"
+nf-test = ">=0.9.5,<0.10"
