@@ -1,13 +1,36 @@
+# Nextflow
 .nextflow*
 work/
+
+# nf-core
+null/
 data/
 results/
-.DS_Store
 testing/
-testing*
-*.pyc
-null/
+testing*/
 
-# pixi environments
-.pixi
-*.egg-info
+# Pixi
+.pixi/
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.egg-info/
+dist/
+build/
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+Icon?
+._*
+
+# Editors
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
