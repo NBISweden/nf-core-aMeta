@@ -90,7 +90,7 @@ workflow AMETA {
     //
     // SUBWORKFLOW: ALIGN
     //
-    ch_reference = Channel.fromPath( params.bowtie2_db, checkIfExists: true)
+    ch_reference = channel.fromPath( params.bowtie2_db, checkIfExists: true)
         .map{ file -> [ [ id: file.baseName ], file ] }
     ch_bowtie2 = ch_reference
         .branch { meta, fasta ->
@@ -114,7 +114,7 @@ workflow AMETA {
     ch_versions = ch_versions.mix(FASTQ_ALIGN_BOWTIE2.out.versions)
 
     // SUBWORKFLOW: KRAKENUNIQ
-    ch_kdb = Channel.fromPath(params.krakenuniq_db, checkIfExists: true, type: 'dir')
+    ch_kdb = channel.fromPath(params.krakenuniq_db, checkIfExists: true, type: 'dir')
         .branch { dbdir ->
             as_is: dbdir.resolve('database.kdb').exists()
                 return [ [ id: dbdir.name ], dbdir ] // meta, db
@@ -165,7 +165,7 @@ workflow AMETA {
     ch_versions = ch_versions.mix(KRAKENUNIQ_ABUNDANCEMATRIX.out.versions)
 
     // SUBWORKFLOW: Map Damage
-    Channel.fromPath( params.bowtie2_seqid2taxid_db, checkIfExists: true )
+    channel.fromPath( params.bowtie2_seqid2taxid_db, checkIfExists: true )
         .flatMap{ tsv -> tsv.splitCsv(header:false, sep:"\t")*.reverse() }
         .groupTuple() // [ taxid, [ ref1, ref2, ref3 ] ]
         .combine( KRAKENUNIQ_FILTER.out.species_tax_id.flatMap{ meta, txt -> txt.splitText().collect{ [ it.trim(), meta ] } }, by: 0 )
@@ -312,7 +312,7 @@ workflow AMETA {
     //
     // Collate and save software versions
     //
-    def topic_versions = Channel.topic("versions")
+    def topic_versions = channel.topic("versions")
         .distinct()
         .branch { entry ->
             versions_file: entry instanceof Path
