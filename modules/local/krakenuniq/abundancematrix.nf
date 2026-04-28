@@ -24,7 +24,6 @@ process KRAKENUNIQ_ABUNDANCEMATRIX {
     task.ext.when == null || task.ext.when
 
     script:
-    def args = task.ext.args ?: ''
     def prefix = task.ext.prefix ?: "krakenuniq"
     """
     krakenuniq_abundance_matrix.R \\
@@ -38,19 +37,6 @@ process KRAKENUNIQ_ABUNDANCEMATRIX {
         . \\
         |& tee -a ${prefix}.abundance_matrix.log
     ls
-
-    cat <<-END_VERSIONS > versions.yml
-    "${task.process}":
-        r-base: \$(R --version |& sed '1!d; s/R version //; s/ .*//')
-        pheatmap: \$(Rscript -e "cat(as.character(packageVersion('pheatmap')))")
-    END_VERSIONS
-    """
-
-    stub:
-    def args = task.ext.args ?: ''
-    def prefix = task.ext.prefix ?: "${meta.id}"
-    """
-    touch ${prefix}.bam
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":

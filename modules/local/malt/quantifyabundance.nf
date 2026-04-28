@@ -19,7 +19,6 @@ process MALT_QUANTIFYABUNDANCE {
     task.ext.when == null || task.ext.when
 
     script:
-    def args = task.ext.args ?: ''
     def prefix = task.ext.prefix ?: "${meta.id}"
     """
     malt_quantify_abundance.py $sam $unique_taxids > ${prefix}.sam_counts.txt

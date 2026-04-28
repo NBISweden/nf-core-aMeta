@@ -25,7 +25,6 @@ process KRAKENUNIQ_FILTER {
     task.ext.when == null || task.ext.when
 
     script:
-    def args = task.ext.args ?: ''
     def prefix = task.ext.prefix ?: "${meta.id}"
     """
     filter_krakenuniq.py \\
@@ -37,22 +36,6 @@ process KRAKENUNIQ_FILTER {
 
     cut -f7 ${report}.pathogens | tail -n +2 > ${prefix}.taxID.pathogens
     cut -f7 ${report}.filtered | tail -n +2 > ${prefix}.taxID.species
-
-    cat <<-END_VERSIONS > versions.yml
-    "${task.process}":
-        python: \$(python --version 2>&1 | sed 's/Python //g')
-        pandas: \$(python -c "import pkg_resources; print(pkg_resources.get_distribution('pandas').version)")
-    END_VERSIONS
-    """
-
-    stub:
-    def args = task.ext.args ?: ''
-    def prefix = task.ext.prefix ?: "${meta.id}"
-    """
-    touch ${prefix}.krakenuniq.output.pathogens
-    touch ${prefix}.krakenuniq.output.filtered
-    touch ${prefix}.taxID.species
-    touch ${prefix}.taxID.pathogens
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":

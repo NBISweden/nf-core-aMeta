@@ -25,8 +25,6 @@ process BREADTHOFCOVERAGE {
     task.ext.when == null || task.ext.when
 
     script:
-    def args = task.ext.args ?: ''
-    def prefix = task.ext.prefix ?: "${meta.id}"
     """
     REF_ID="None"
     REF_ID_FILE=\$( find -L malt_extract_results -wholename "*/default/readDist/*.rma6_additionalNodeEntries.txt" )

@@ -18,7 +18,6 @@ process PLOTAUTHENTICATIONSCORE {
     task.ext.when == null || task.ext.when
 
     script:
-    def args = task.ext.args ?: ''
     def dirs = scores.collectEntries{ txt -> [ txt, "scores/${txt.simpleName}/${txt.name.tokenize(".")[1]}" ] }
     def link_cmd = dirs.collect{ txt, dir -> "ln -s ../../../$txt $dir/authentication_scores.txt;"}.join("\n    ")
     """

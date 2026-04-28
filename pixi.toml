@@ -11,10 +11,20 @@ clean-all = "git clean -e .pixi -fdx"
 clean-work = "nextflow clean -f last && find work -type d -empty -delete"
 test = "nextflow run main.nf -resume -profile test,docker --outdir results --db_cache 'work/database_cache'"
 # Nextflow
-lint = "nextflow lint -exclude '.pixi' -exclude 'nf-test.config' ."
+[tasks.lint]
+cmd = """
+nextflow lint \
+    -exclude '.pixi' \
+    -exclude 'nf-test.config' \
+    -exclude 'modules/nf-core' \
+    -exclude 'subworkflows/nf-core' \
+    .
+"""
 # nf-core
-nf-core-sync = "nf-core pipelines sync"
-update-modules = "nf-core modules update"
+[tasks.nf-core-sync]
+cmd = "nf-core pipelines sync"
+[tasks.update-modules]
+cmd = "nf-core modules update"
 
 [dependencies]
 nextflow = ">=25.10.4,<26"

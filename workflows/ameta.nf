@@ -126,14 +126,13 @@ workflow AMETA {
                     dbdir.resolve('seqid2taxid.map') // custom map
                 ]
         }
-    KRAKENUNIQ_BUILD ( ch_kdb.build )
+    KRAKENUNIQ_BUILD ( ch_kdb.build, false ) // custom fasta, keep_intermediates
     ch_versions = ch_versions.mix(KRAKENUNIQ_BUILD.out.versions)
-    ch_krakenuniq_db = KRAKENUNIQ_BUILD.out.db.mix(ch_kdb.as_is).collect{ it[1] }
+    ch_krakenuniq_db = KRAKENUNIQ_BUILD.out.db.mix(ch_kdb.as_is).collect{ _meta, db -> db }
     KRAKENUNIQ_PRELOADEDKRAKENUNIQ(
         CUTADAPT.out.reads,               // [ meta, fastqs ]
         'fastq',                          // fastq/fasta
         ch_krakenuniq_db,                 // db
-        params.krakenuniq_ram_chunk_size, // ram_chunk_size
         true,                             // save_output_reads
         true,                             // report_file
         true                              // save_output
@@ -158,7 +157,7 @@ workflow AMETA {
     )
     ch_versions = ch_versions.mix(KRONA_KTIMPORTTAXONOMY.out.versions.first())
     KRAKENUNIQ_ABUNDANCEMATRIX(
-        KRAKENUNIQ_FILTER.out.filtered.collect{ it[1] },
+        KRAKENUNIQ_FILTER.out.filtered.collect{ _meta, filtered -> filtered },
         params.n_unique_kmers,
         params.n_tax_reads
     )
@@ -168,7 +167,7 @@ workflow AMETA {
     channel.fromPath( params.bowtie2_seqid2taxid_db, checkIfExists: true )
         .flatMap{ tsv -> tsv.splitCsv(header:false, sep:"\t")*.reverse() }
         .groupTuple() // [ taxid, [ ref1, ref2, ref3 ] ]
-        .combine( KRAKENUNIQ_FILTER.out.species_tax_id.flatMap{ meta, txt -> txt.splitText().collect{ [ it.trim(), meta ] } }, by: 0 )
+        .combine( KRAKENUNIQ_FILTER.out.species_tax_id.flatMap{ meta, txt -> txt.splitText().collect{ line -> [ line.trim(), meta ] } }, by: 0 )
         .map { taxid, seqids, meta -> [ meta, taxid, seqids ] }
         .combine( FASTQ_ALIGN_BOWTIE2.out.bam.join(FASTQ_ALIGN_BOWTIE2.out.bai), by: 0 )
         // Add taxid and seqids to meta so samtools view $args2 can reference it
@@ -178,12 +177,14 @@ workflow AMETA {
     SAMTOOLS_VIEW (
         ch_taxid_seqrefs, // bam files
         [ [] , [] ],      // Empty fasta reference
-        []                // Empty qname file
+        [ [] , [] ],      // Empty qname file
+        [ [] , [] ],      // Empty bed file
+        "csi"
     )
     ch_versions = ch_versions.mix(SAMTOOLS_VIEW.out.versions.first())
     MAPDAMAGE2 (
         SAMTOOLS_VIEW.out.bam,
-        ch_reference.collect{ meta, fasta -> fasta }
+        ch_reference.collect{ _meta, fasta -> fasta }
     )
     ch_versions = ch_versions.mix(MAPDAMAGE2.out.versions.first())
 
@@ -197,13 +198,13 @@ workflow AMETA {
     MALT_BUILD (
         MALT_PREPAREDB.out.library,
         [],
-        file(params.malt_accession2taxid, checkIfExists: true) // Note: Deprecated. Should be replaced with Megan db.
+        file(params.malt_accession2taxid, checkIfExists: true),
+        "-acc2taxa"
     )
     ch_versions = ch_versions.mix(MALT_BUILD.out.versions)
     MALT_RUN (
         CUTADAPT.out.reads,
-        MALT_BUILD.out.index.collect(),
-        'BlastN'
+        MALT_BUILD.out.index.collect()
     )
     ch_versions = ch_versions.mix(MALT_RUN.out.versions.first())
     MALT_QUANTIFYABUNDANCE (
@@ -212,32 +213,34 @@ workflow AMETA {
     )
     ch_versions = ch_versions.mix(MALT_QUANTIFYABUNDANCE.out.versions.first())
     MALT_ABUNDANCEMATRIXSAM ( // Note: Implicit merge since two value channels are used
-        MALT_QUANTIFYABUNDANCE.out.counts.collect{ it[1] },
+        MALT_QUANTIFYABUNDANCE.out.counts.collect{ _meta, counts -> counts },
         KRAKENUNIQ_ABUNDANCEMATRIX.out.species_names_list
     )
     ch_versions = ch_versions.mix(MALT_ABUNDANCEMATRIXSAM.out.versions)
-    MALT_ABUNDANCEMATRIXRMA6 ( MALT_RUN.out.rma6.collect{ it[1] } )
+    MALT_ABUNDANCEMATRIXRMA6 ( MALT_RUN.out.rma6.collect{ _meta, rma6 -> rma6 } )
     ch_versions = ch_versions.mix(MALT_ABUNDANCEMATRIXRMA6.out.versions)
 
     // SUBWORKFLOW: authentic
     // Rule: Create_Sample_TaxID_Directories, however taxid is added to meta data instead
     ch_species_with_taxid = KRAKENUNIQ_FILTER.out.species_tax_id
-        .flatMap{ meta, taxids -> taxids.splitCsv(header: false, sep: '\t').collect{ meta + [ taxid: it[0] ] } }
+        .flatMap{ meta, taxids -> taxids.splitCsv(header: false, sep: '\t').collect{ row -> meta + [ taxid: row.head() ] } }
     MAKENODELIST (
         ch_species_with_taxid,
         ch_krakenuniq_db // Contains the taxDB
     )
+    ch_maltextract = MALT_RUN.out.rma6.combine(
+        MAKENODELIST.out.node_list
+            .map{ meta, node_list -> [ meta.subMap(meta.keySet() - 'taxid'), meta.taxid, node_list ] },
+        by: 0
+    )
+    .multiMap { meta, rma6, taxid, node_list ->
+        rma6: [ meta + [taxid: taxid], rma6 ]
+        node_list: node_list
+    }
+
     MALTEXTRACT (
-        MALT_RUN.out.rma6
-            .combine(
-                MAKENODELIST.out.node_list
-                    .map{ meta, node_list -> [ meta.subMap(meta.keySet() - 'taxid'), meta.taxid, node_list ] },
-                by: 0
-            )
-            .multiMap { meta, rma6, taxid, node_list ->
-                rma6: [ meta + [taxid: taxid], rma6 ]
-                node_list: node_list
-            },
+        ch_maltextract.rma6,
+        ch_maltextract.node_list,
         file( params.ncbi_dir, type: 'dir' ) // * checkIfExists skipped as Malt will create the folder contents automatically,
         // unless offline in which case a local path to `ncbi` dir should be supplied with the ncbi.tre and ncbi.map inside
         // Download from https://github.com/husonlab/megan-ce/tree/master/src/megan/resources/files
@@ -258,7 +261,7 @@ workflow AMETA {
         [ [], [] ] // Empty fai
     )
     malt_nt_fasta = ch_reference.join( SAMTOOLS_FAIDX.out.fai.mix(ch_samtoolsfa.with_idx) )
-        .multiMap { meta, fasta, fai ->
+        .multiMap { _meta, fasta, fai ->
             fasta: fasta
             fai  : fai
         }
@@ -306,7 +309,7 @@ workflow AMETA {
     ch_versions = ch_versions.mix( AUTHENTICATIONSCORE.out.versions.first() )
 
     // SUBWORKFLOW: summary
-    PLOTAUTHENTICATIONSCORE( AUTHENTICATIONSCORE.out.authentication_scores.collect{ it[1] } )
+    PLOTAUTHENTICATIONSCORE( AUTHENTICATIONSCORE.out.authentication_scores.collect{ _meta, scores -> scores } )
     ch_versions = ch_versions.mix(PLOTAUTHENTICATIONSCORE.out.versions)
 
     //

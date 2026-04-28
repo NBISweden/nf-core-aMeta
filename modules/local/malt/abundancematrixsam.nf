@@ -18,7 +18,6 @@ process MALT_ABUNDANCEMATRIXSAM {
     task.ext.when == null || task.ext.when
 
     script:
-    def args = task.ext.args ?: ''
     """
     malt_abundance_matrix.R counts/ ./
 
