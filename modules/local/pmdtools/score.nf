@@ -12,7 +12,8 @@ process PMDTOOLS_SCORE {
 
     output:
     tuple val(meta), path("*.PMDscores.txt"), emit: pmd_scores
-    path "versions.yml"                     , emit: versions
+    tuple val("${task.process}"), val('pmdtools'), eval("pmdtools --version | sed 's/.*v//'"), topic: versions, emit: versions_pmdtools
+    tuple val("${task.process}"), val('samtools'), eval("samtools --version |& sed '1!d ; s/samtools //'"), topic: versions, emit: versions_samtools
 
     when:
     task.ext.when == null || task.ext.when
@@ -22,11 +23,5 @@ process PMDTOOLS_SCORE {
     """
     (samtools view -h $bam || true) \\
         | pmdtools --printDS > ${prefix}.PMDscores.txt
-
-    cat <<-END_VERSIONS > versions.yml
-    "${task.process}":
-        pmdtools: \$(pmdtools --version | sed 's/.*v//')
-        samtools: \$(samtools --version |& sed '1!d ; s/samtools //')
-    END_VERSIONS
     """
 }

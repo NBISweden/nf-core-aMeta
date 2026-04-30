@@ -12,7 +12,8 @@ process MALT_ABUNDANCEMATRIXSAM {
 
     output:
     path "malt_abundance_matrix_sam.txt", emit: abundance_matrix_sam
-    path "versions.yml"                 , emit: versions
+    tuple val("${task.process}"), val('r-base'), eval("R --version |& sed '1!d; s/R version //; s/ .*//'"), topic: versions, emit: versions_rbase
+    tuple val("${task.process}"), val('pheatmap'), eval("Rscript -e \"cat(as.character(packageVersion('pheatmap')))\""), topic: versions, emit: versions_pheatmap
 
     when:
     task.ext.when == null || task.ext.when
@@ -20,11 +21,5 @@ process MALT_ABUNDANCEMATRIXSAM {
     script:
     """
     malt_abundance_matrix.R counts/ ./
-
-    cat <<-END_VERSIONS > versions.yml
-    "${task.process}":
-        r-base: \$(R --version |& sed '1!d; s/R version //; s/ .*//')
-        pheatmap: \$(Rscript -e "cat(as.character(packageVersion('pheatmap')))")
-    END_VERSIONS
     """
 }

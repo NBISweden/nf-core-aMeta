@@ -19,7 +19,7 @@ process BREADTHOFCOVERAGE {
     tuple val(meta), path("*.sorted.bam.bai")     , emit: sorted_bam_bai
     tuple val(meta), path("*.breadth_of_coverage"), emit: breadth_of_coverage
     tuple val(meta), path("*.fasta")              , emit: fasta
-    path "versions.yml"                           , emit: versions
+    tuple val("${task.process}"), val('samtools'), eval("samtools --version | sed '1!d; s/samtools //'"), topic: versions, emit: versions_samtools
 
     when:
     task.ext.when == null || task.ext.when
@@ -48,10 +48,5 @@ process BREADTHOFCOVERAGE {
         > name_list.txt.regions
     samtools faidx $fasta -r name_list.txt.regions -o \$REF_ID.fasta
     rm ${meta.taxid}.sam
-
-    cat <<-END_VERSIONS > versions.yml
-    "${task.process}":
-        samtools: \$(samtools --version | sed '1!d; s/samtools //')
-    END_VERSIONS
     """
 }

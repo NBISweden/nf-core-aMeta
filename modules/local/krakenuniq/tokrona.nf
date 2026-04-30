@@ -14,7 +14,8 @@ process KRAKENUNIQ_TOKRONA {
     tuple val(meta), path("*_taxIDs_kmers1000.txt")           , emit: taxid_txt
     tuple val(meta), path("${sequences.name}_kmers1000.txt")  , emit: sequence_txt
     tuple val(meta), path("${sequences.name}_kmers1000.krona"), emit: krona
-    path "versions.yml"                                       , emit: versions
+    tuple val("${task.process}"), val('python'), eval("python --version 2>&1 | sed 's/Python //g'"), topic: versions, emit: versions_python
+    tuple val("${task.process}"), val('pandas'), eval("python -c \"import pkg_resources; print(pkg_resources.get_distribution('pandas').version)\""), topic: versions, emit: versions_pandas
 
     when:
     task.ext.when == null || task.ext.when
@@ -26,11 +27,5 @@ process KRAKENUNIQ_TOKRONA {
         $sequences
 
     cat ${sequences.name}_kmers1000.txt | cut -f 2,3 > ${sequences.name}_kmers1000.krona
-
-    cat <<-END_VERSIONS > versions.yml
-    "${task.process}":
-        python: \$(python --version 2>&1 | sed 's/Python //g')
-        pandas: \$(python -c "import pkg_resources; print(pkg_resources.get_distribution('pandas').version)")
-    END_VERSIONS
     """
 }

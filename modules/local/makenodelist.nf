@@ -14,7 +14,7 @@ process MAKENODELIST {
 
     output:
     tuple val(meta), path("node_list.txt"), emit: node_list
-    path "versions.yml"                   , emit: versions
+    tuple val("${task.process}"), val('gawk'), eval("awk -Wversion | sed '1!d; s/.*Awk //; s/,.*//'"), topic: versions, emit: versions_gawk
 
     when:
     task.ext.when == null || task.ext.when
@@ -22,10 +22,5 @@ process MAKENODELIST {
     script:
     """
     awk -F'\\t' '\$1 == "${meta.taxid}" { print \$3 }' ${taxdb_dir}/taxDB > node_list.txt
-
-    cat <<-END_VERSIONS > versions.yml
-    "${task.process}":
-        gawk: \$(awk -Wversion | sed '1!d; s/.*Awk //; s/,.*//')
-    END_VERSIONS
     """
 }

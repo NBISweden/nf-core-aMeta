@@ -12,7 +12,7 @@ process AUTHENTICATIONPLOTS {
 
     output:
     tuple val(meta), path("*.pdf"), emit: pdf
-    path "versions.yml"           , emit: versions
+    tuple val("${task.process}"), val('r-base'), eval("R --version |& sed '1!d; s/R version //; s/ .*//'"), topic: versions, emit: versions_rbase
 
     when:
     task.ext.when == null || task.ext.when
@@ -21,10 +21,5 @@ process AUTHENTICATIONPLOTS {
     """
     ID=\$( find -L MaltExtract_output -wholename "*/default/editDistance/*_editDistance.txt" -exec basename {} "_editDistance.txt" \\; )
     authentic.R ${meta.taxid} "\$ID" .
-
-    cat <<-END_VERSIONS > versions.yml
-    "${task.process}":
-        r-base: \$(R --version |& sed '1!d; s/R version //; s/ .*//')
-    END_VERSIONS
     """
 }

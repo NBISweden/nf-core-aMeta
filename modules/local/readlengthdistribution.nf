@@ -12,7 +12,7 @@ process READLENGTHDISTRIBUTION {
 
     output:
     tuple val(meta), path("*.read_length.txt"), emit: read_length
-    path "versions.yml"           , emit: versions
+    tuple val("${task.process}"), val('samtools'), eval("samtools --version |& sed '1!d ; s/samtools //'"), topic: versions, emit: versions_samtools
 
     when:
     task.ext.when == null || task.ext.when
@@ -26,10 +26,5 @@ process READLENGTHDISTRIBUTION {
         $args \\
         $bam \\
         | awk '{ print length(\$10) }' > ${prefix}.read_length.txt
-
-    cat <<-END_VERSIONS > versions.yml
-    "${task.process}":
-        readlengthdistribution: \$(samtools --version |& sed '1!d ; s/samtools //')
-    END_VERSIONS
     """
 }

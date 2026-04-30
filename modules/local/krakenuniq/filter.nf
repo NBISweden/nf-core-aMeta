@@ -19,7 +19,8 @@ process KRAKENUNIQ_FILTER {
     tuple val(meta), path("*.taxID.pathogens")      , emit: pathogen_tax_id
     tuple val(meta), path("*.taxID.species")        , emit: species_tax_id
     tuple val(meta), path("*.krakenuniq_filter.log"), emit: log
-    path "versions.yml"                             , emit: versions
+    tuple val("${task.process}"), val('python'), eval("python --version 2>&1 | sed 's/Python //g'"), topic: versions, emit: versions_python
+    tuple val("${task.process}"), val('pandas'), eval("python -c \"import pkg_resources; print(pkg_resources.get_distribution('pandas').version)\""), topic: versions, emit: versions_pandas
 
     when:
     task.ext.when == null || task.ext.when
@@ -36,11 +37,5 @@ process KRAKENUNIQ_FILTER {
 
     cut -f7 ${report}.pathogens | tail -n +2 > ${prefix}.taxID.pathogens
     cut -f7 ${report}.filtered | tail -n +2 > ${prefix}.taxID.species
-
-    cat <<-END_VERSIONS > versions.yml
-    "${task.process}":
-        python: \$(python --version 2>&1 | sed 's/Python //g')
-        pandas: \$(python -c "import pkg_resources; print(pkg_resources.get_distribution('pandas').version)")
-    END_VERSIONS
     """
 }

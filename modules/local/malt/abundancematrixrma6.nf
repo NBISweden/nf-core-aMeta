@@ -11,7 +11,7 @@ process MALT_ABUNDANCEMATRIXRMA6 {
 
     output:
     path "malt_abundance_matrix_rma6.txt", emit: abundance_matrix_rma6
-    path "versions.yml"                  , emit: versions
+    tuple val("${task.process}"), val('rma-tabuliser'), eval("rma-tabuliser -h | sed '/VERSION/{N;N;s/.*\\n    //;q};d'"), topic: versions, emit: versions_rma_tabuliser
 
     when:
     task.ext.when == null || task.ext.when
@@ -21,10 +21,5 @@ process MALT_ABUNDANCEMATRIXRMA6 {
     """
     rma-tabuliser -d rma6s/ $args
     mv rma6s/count_table.tsv malt_abundance_matrix_rma6.txt
-
-    cat <<-END_VERSIONS > versions.yml
-    "${task.process}":
-        rma-tabiliser: \$(rma-tabuliser -h | sed '/VERSION/{N;N;s/.*\\n    //;q};d')
-    END_VERSIONS
     """
 }

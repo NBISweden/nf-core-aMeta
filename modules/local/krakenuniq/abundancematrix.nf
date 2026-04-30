@@ -18,7 +18,8 @@ process KRAKENUNIQ_ABUNDANCEMATRIX {
     path("krakenuniq_normalized_abundance_heatmap.pdf"), emit: normalized_abundance_heatmap
     path("unique_species_names_list.txt")              , emit: species_names_list
     path("unique_species_taxid_list.txt")              , emit: species_taxid_list
-    path "versions.yml"                                , emit: versions
+    tuple val("${task.process}"), val('r-base'), eval("R --version |& sed '1!d; s/R version //; s/ .*//'"), topic: versions, emit: versions_rbase
+    tuple val("${task.process}"), val('pheatmap'), eval("Rscript -e \"cat(as.character(packageVersion('pheatmap')))\""), topic: versions, emit: versions_pheatmap
 
     when:
     task.ext.when == null || task.ext.when
@@ -36,12 +37,5 @@ process KRAKENUNIQ_ABUNDANCEMATRIX {
         . \\
         . \\
         |& tee -a ${prefix}.abundance_matrix.log
-    ls
-
-    cat <<-END_VERSIONS > versions.yml
-    "${task.process}":
-        r-base: \$(R --version |& sed '1!d; s/R version //; s/ .*//')
-        pheatmap: \$(Rscript -e "cat(as.character(packageVersion('pheatmap')))")
-    END_VERSIONS
     """
 }

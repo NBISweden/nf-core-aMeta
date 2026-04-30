@@ -16,7 +16,7 @@ process MALT_PREPAREDB {
     path "seqids.project"         , emit: project
     path "project.headers"        , emit: headers
     path "library.project.fna"    , emit: library
-    path "versions.yml"           , emit: versions
+    tuple val("${task.process}"), val('seqtk'), eval(" seqtk |& sed '3!d; s/.* //; s/-.*//' "), topic: versions, emit: versions_seqtk
 
     when:
     task.ext.when == null || task.ext.when
@@ -33,10 +33,5 @@ process MALT_PREPAREDB {
         $nt_fasta \\
         project.headers \\
         > library.project.fna
-
-    cat <<-END_VERSIONS > versions.yml
-    "${task.process}":
-        seqtk: \$( seqtk |& sed '3!d; s/.* //; s/-.*//' )
-    END_VERSIONS
     """
 }

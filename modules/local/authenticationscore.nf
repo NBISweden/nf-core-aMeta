@@ -12,7 +12,7 @@ process AUTHENTICATIONSCORE {
 
     output:
     tuple val(meta), path("*.authentication_scores.txt"), emit: authentication_scores
-    path "versions.yml"                                 , emit: versions
+    tuple val("${task.process}"), val('r-base'), eval("R --version |& sed '1!d; s/R version //; s/ .*//'"), topic: versions, emit: versions_rbase
 
     when:
     task.ext.when == null || task.ext.when
@@ -27,10 +27,5 @@ process AUTHENTICATIONSCORE {
         . \\
         $pmd_scores
     mv authentication_scores.txt ${prefix}.authentication_scores.txt
-
-    cat <<-END_VERSIONS > versions.yml
-    "${task.process}":
-        r-base: \$(R --version |& sed '1!d; s/R version //; s/ .*//')
-    END_VERSIONS
     """
 }

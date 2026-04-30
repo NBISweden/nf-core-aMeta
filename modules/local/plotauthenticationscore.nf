@@ -12,7 +12,8 @@ process PLOTAUTHENTICATIONSCORE {
     output:
     path "*.pdf"       , emit: pdf
     path "*.txt"       , emit: txt
-    path "versions.yml", emit: versions
+    tuple val("${task.process}"), val('r-base'), eval("R --version |& sed '1!d; s/R version //; s/ .*//'"), topic: versions, emit: versions_rbase
+    tuple val("${task.process}"), val('pheatmap'), eval("Rscript -e \"cat(as.character(packageVersion('pheatmap')))\""), topic: versions, emit: versions_pheatmap
 
     when:
     task.ext.when == null || task.ext.when
@@ -25,11 +26,5 @@ process PLOTAUTHENTICATIONSCORE {
     $link_cmd
 
     plot_score.R scores .
-
-    cat <<-END_VERSIONS > versions.yml
-    "${task.process}":
-        r-base: \$(R --version |& sed '1!d; s/R version //; s/ .*//')
-        pheatmap: \$(Rscript -e "cat(as.character(packageVersion('pheatmap')))")
-    END_VERSIONS
     """
 }

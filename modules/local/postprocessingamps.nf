@@ -15,7 +15,7 @@ process POSTPROCESSINGAMPS {
     tuple val(meta), path("$malt_extract/heatmap_overview_Wevid.pdf"), emit: heatmap_pdf
     tuple val(meta), path("$malt_extract/heatmap_overview_Wevid.tsv"), emit: heatmap_tsv
     tuple val(meta), path("$malt_extract/pdf_candidate_profiles")    , emit: pdf_candidate_profiles
-    path "versions.yml"                                              , emit: versions
+    tuple val("${task.process}"), val('r-base'), eval("R --version |& sed '1!d; s/R version //; s/ .*//'"), topic: versions, emit: versions_rbase
 
     when:
     task.ext.when == null || task.ext.when
@@ -31,10 +31,5 @@ process POSTPROCESSINGAMPS {
         -n $node_list \\
         || { echo 'postprocessing failed for ${meta.id}_${meta.taxid}' \\
         > $malt_extract/analysis.RData; }
-
-    cat <<-END_VERSIONS > versions.yml
-    "${task.process}":
-        r-base: \$(R --version |& sed '1!d; s/R version //; s/ .*//')
-    END_VERSIONS
     """
 }
