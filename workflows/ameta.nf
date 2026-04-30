@@ -69,23 +69,19 @@ workflow AMETA {
     ch_samplesheet // channel: samplesheet read in from --input
     main:
 
-    ch_versions = channel.empty()
     ch_multiqc_files = channel.empty()
     //
     // SUBWORKFLOW: QC
     //
-    FASTQC_RAW (
+    FASTQC_RAW ( // TODO: Move versions to topic channels!
         ch_samplesheet
     )
-    ch_versions = ch_versions.mix(FASTQC_RAW.out.versions.first())
     CUTADAPT (
         ch_samplesheet
     )
-    ch_versions = ch_versions.mix(CUTADAPT.out.versions.first())
     FASTQC_TRIM (
         CUTADAPT.out.reads
     )
-    ch_versions = ch_versions.mix(FASTQC_TRIM.out.versions.first())
 
     //
     // SUBWORKFLOW: ALIGN
@@ -103,7 +99,6 @@ workflow AMETA {
         }
     BOWTIE2_BUILD(ch_bowtie2.ref_only)
     ch_bt2index = BOWTIE2_BUILD.out.index.mix(ch_bowtie2.with_idx).collect()
-    ch_versions = ch_versions.mix(BOWTIE2_BUILD.out.versions)
     FASTQ_ALIGN_BOWTIE2(
         CUTADAPT.out.reads,    // ch_reads
         ch_bt2index,           // ch_index
@@ -111,7 +106,6 @@ workflow AMETA {
         false,                 // sort bam
         ch_reference.collect() // ch_fasta
     )
-    ch_versions = ch_versions.mix(FASTQ_ALIGN_BOWTIE2.out.versions)
 
     // SUBWORKFLOW: KRAKENUNIQ
     ch_kdb = channel.fromPath(params.krakenuniq_db, checkIfExists: true, type: 'dir')
@@ -127,7 +121,6 @@ workflow AMETA {
                 ]
         }
     KRAKENUNIQ_BUILD ( ch_kdb.build, false ) // custom fasta, keep_intermediates
-    ch_versions = ch_versions.mix(KRAKENUNIQ_BUILD.out.versions)
     ch_krakenuniq_db = KRAKENUNIQ_BUILD.out.db.mix(ch_kdb.as_is).collect{ _meta, db -> db }
     KRAKENUNIQ_PRELOADEDKRAKENUNIQ(
         CUTADAPT.out.reads,               // [ meta, fastqs ]
@@ -137,31 +130,25 @@ workflow AMETA {
         true,                             // report_file
         true                              // save_output
     )
-    ch_versions = ch_versions.mix(KRAKENUNIQ_PRELOADEDKRAKENUNIQ.out.versions.first())
     KRAKENUNIQ_FILTER(
         KRAKENUNIQ_PRELOADEDKRAKENUNIQ.out.report,
         params.n_unique_kmers,
         params.n_tax_reads,
         file( params.pathogenomes_found, checkIfExists: true )
     )
-    ch_versions = ch_versions.mix(KRAKENUNIQ_FILTER.out.versions.first())
     KRAKENUNIQ_TOKRONA(
         KRAKENUNIQ_FILTER.out.filtered.join(KRAKENUNIQ_PRELOADEDKRAKENUNIQ.out.classified_assignment)
     )
-    ch_versions = ch_versions.mix(KRAKENUNIQ_TOKRONA.out.versions.first())
     KRONA_KTUPDATETAXONOMY()
-    ch_versions = ch_versions.mix(KRONA_KTUPDATETAXONOMY.out.versions)
     KRONA_KTIMPORTTAXONOMY(
         KRAKENUNIQ_TOKRONA.out.krona,
         params.krona_taxonomy_file ? file( params.krona_taxonomy_file, checkIfExists: true ) : KRONA_KTUPDATETAXONOMY.out.db
     )
-    ch_versions = ch_versions.mix(KRONA_KTIMPORTTAXONOMY.out.versions.first())
     KRAKENUNIQ_ABUNDANCEMATRIX(
         KRAKENUNIQ_FILTER.out.filtered.collect{ _meta, filtered -> filtered },
         params.n_unique_kmers,
         params.n_tax_reads
     )
-    ch_versions = ch_versions.mix(KRAKENUNIQ_ABUNDANCEMATRIX.out.versions)
 
     // SUBWORKFLOW: Map Damage
     channel.fromPath( params.bowtie2_seqid2taxid_db, checkIfExists: true )
@@ -181,12 +168,10 @@ workflow AMETA {
         [ [] , [] ],      // Empty bed file
         "csi"
     )
-    ch_versions = ch_versions.mix(SAMTOOLS_VIEW.out.versions.first())
     MAPDAMAGE2 (
         SAMTOOLS_VIEW.out.bam,
         ch_reference.collect{ _meta, fasta -> fasta }
     )
-    ch_versions = ch_versions.mix(MAPDAMAGE2.out.versions.first())
 
     // SUBWORKFLOW: Malt
     MALT_PREPAREDB (
@@ -194,31 +179,25 @@ workflow AMETA {
         file(params.malt_seqid2taxid_db, checkIfExists: true),
         file(params.malt_nt_fasta, checkIfExists: true)
     )
-    ch_versions = ch_versions.mix(MALT_PREPAREDB.out.versions)
     MALT_BUILD (
         MALT_PREPAREDB.out.library,
         [],
         file(params.malt_accession2taxid, checkIfExists: true),
         "-acc2taxa"
     )
-    ch_versions = ch_versions.mix(MALT_BUILD.out.versions)
     MALT_RUN (
         CUTADAPT.out.reads,
         MALT_BUILD.out.index.collect()
     )
-    ch_versions = ch_versions.mix(MALT_RUN.out.versions.first())
     MALT_QUANTIFYABUNDANCE (
         MALT_RUN.out.alignments,
         KRAKENUNIQ_ABUNDANCEMATRIX.out.species_taxid_list.collect()
     )
-    ch_versions = ch_versions.mix(MALT_QUANTIFYABUNDANCE.out.versions.first())
-    MALT_ABUNDANCEMATRIXSAM ( // Note: Implicit merge since two value channels are used
+    MALT_ABUNDANCEMATRIXSAM (
         MALT_QUANTIFYABUNDANCE.out.counts.collect{ _meta, counts -> counts },
         KRAKENUNIQ_ABUNDANCEMATRIX.out.species_names_list
     )
-    ch_versions = ch_versions.mix(MALT_ABUNDANCEMATRIXSAM.out.versions)
     MALT_ABUNDANCEMATRIXRMA6 ( MALT_RUN.out.rma6.collect{ _meta, rma6 -> rma6 } )
-    ch_versions = ch_versions.mix(MALT_ABUNDANCEMATRIXRMA6.out.versions)
 
     // SUBWORKFLOW: authentic
     // Rule: Create_Sample_TaxID_Directories, however taxid is added to meta data instead
@@ -245,9 +224,7 @@ workflow AMETA {
         // unless offline in which case a local path to `ncbi` dir should be supplied with the ncbi.tre and ncbi.map inside
         // Download from https://github.com/husonlab/megan-ce/tree/master/src/megan/resources/files
     )
-    ch_versions = ch_versions.mix(MALTEXTRACT.out.versions.first())
     POSTPROCESSINGAMPS( MAKENODELIST.out.node_list.join(MALTEXTRACT.out.results) )
-    ch_versions = ch_versions.mix(POSTPROCESSINGAMPS.out.versions.first())
     ch_samtoolsfa = ch_reference
         .branch { meta, fasta ->
             def fai = file("${fasta}.fai")
@@ -277,13 +254,9 @@ workflow AMETA {
         malt_nt_fasta.fasta.collect(),
         malt_nt_fasta.fai.collect(),
     )
-    ch_versions = ch_versions.mix(BREADTHOFCOVERAGE.out.versions.first())
     READLENGTHDISTRIBUTION ( BREADTHOFCOVERAGE.out.sorted_bam )
-    ch_versions = ch_versions.mix(READLENGTHDISTRIBUTION.out.versions.first())
     PMDTOOLS_SCORE ( BREADTHOFCOVERAGE.out.sorted_bam )
-    ch_versions = ch_versions.mix(PMDTOOLS_SCORE.out.versions.first())
     PMDTOOLS_DEAMINATION ( BREADTHOFCOVERAGE.out.sorted_bam )
-    ch_versions = ch_versions.mix(PMDTOOLS_DEAMINATION.out.versions.first())
     AUTHENTICATIONPLOTS (
         MAKENODELIST.out.node_list
             .join( READLENGTHDISTRIBUTION.out.read_length )
@@ -292,7 +265,6 @@ workflow AMETA {
             .join( BREADTHOFCOVERAGE.out.name_list )
             .join( MALTEXTRACT.out.results )
     )
-    ch_versions = ch_versions.mix(AUTHENTICATIONPLOTS.out.versions.first())
     ch_authentication_score = MALT_RUN.out.rma6
         .combine(
             MALTEXTRACT.out.results
@@ -306,11 +278,9 @@ workflow AMETA {
             [ meta + [ taxid: taxid ], rma6, maltex_dir, name_list, node_list, pmd ]
         }
     AUTHENTICATIONSCORE( ch_authentication_score )
-    ch_versions = ch_versions.mix( AUTHENTICATIONSCORE.out.versions.first() )
 
     // SUBWORKFLOW: summary
     PLOTAUTHENTICATIONSCORE( AUTHENTICATIONSCORE.out.authentication_scores.collect{ _meta, scores -> scores } )
-    ch_versions = ch_versions.mix(PLOTAUTHENTICATIONSCORE.out.versions)
 
     //
     // Collate and save software versions
@@ -332,7 +302,7 @@ workflow AMETA {
             "${process}:\n${tool_versions.join('\n')}"
         }
 
-    softwareVersionsToYAML(ch_versions.mix(topic_versions.versions_file))
+    softwareVersionsToYAML(topic_versions.versions_file)
         .mix(topic_versions_string)
         .collectFile(
             storeDir: "${params.outdir}/pipeline_info",
@@ -382,8 +352,9 @@ workflow AMETA {
         []
     )
 
-    emit:multiqc_report = MULTIQC.out.report.toList() // channel: /path/to/multiqc_report.html
-    versions       = ch_versions                 // channel: [ path(versions.yml) ]
+    emit:
+    multiqc_report = MULTIQC.out.report.toList() // channel: /path/to/multiqc_report.html
+    versions       = ch_collated_versions        // channel: [ path(versions.yml) ]
 
 }
 

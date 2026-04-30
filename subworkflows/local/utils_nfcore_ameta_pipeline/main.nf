@@ -38,9 +38,6 @@ workflow PIPELINE_INITIALISATION {
     show_hidden       // boolean: Show hidden parameters in the help message
 
     main:
-
-    ch_versions = channel.empty()
-
     //
     // Print version and exit if required and dump pipeline parameters to JSON file
     //
@@ -101,7 +98,6 @@ workflow PIPELINE_INITIALISATION {
 
     emit:
     samplesheet = ch_samplesheet
-    versions    = ch_versions
 }
 
 /*
