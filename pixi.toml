@@ -27,6 +27,7 @@ cmd = "nf-core pipelines sync"
 cmd = "nf-core modules update"
 
 [dependencies]
-nextflow = ">=25.10.4,<26"
-nf-core = ">=3.5.2,<4"
+nextflow = ">=26.4.0,<27"
+nf-core = ">=4.0.2,<5"
 nf-test = ">=0.9.5,<0.10"
+prek = ">=0.3.11,<0.4"
