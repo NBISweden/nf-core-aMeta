@@ -1,6 +1,7 @@
 # Nextflow
 .nextflow*
 work/
+.lineage/
 
 # nf-core
 null/
@@ -34,3 +35,4 @@ Icon?
 *.swp
 *.swo
 *~
+
