@@ -25,6 +25,9 @@ nextflow lint \
 cmd = "nf-core pipelines sync"
 [tasks.update-modules]
 cmd = "nf-core modules update"
+[tasks.patch-module]
+args = ["module"]
+cmd = "nf-core modules patch {{ module }}"
 
 [dependencies]
 nextflow = ">=26.4.0,<27"
