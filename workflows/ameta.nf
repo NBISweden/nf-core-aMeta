@@ -99,7 +99,7 @@ workflow AMETA {
             with_idx: indices_present
                 return tuple(meta, fasta.parent)
             ref_only: !indices_present
-                return tuple(meta, fasta)
+                return tuple(meta, fasta, [])
         }
     BOWTIE2_BUILD(ch_bowtie2.ref_only)
     ch_bt2index = BOWTIE2_BUILD.out.index.mix(ch_bowtie2.with_idx).collect()
@@ -160,7 +160,7 @@ workflow AMETA {
         .groupTuple() // [ taxid, [ ref1, ref2, ref3 ] ]
         .combine( KRAKENUNIQ_FILTER.out.species_tax_id.flatMap{ meta, txt -> txt.splitText().collect{ line -> [ line.trim(), meta ] } }, by: 0 )
         .map { taxid, seqids, meta -> [ meta, taxid, seqids ] }
-        .combine( FASTQ_ALIGN_BOWTIE2.out.bam.join(FASTQ_ALIGN_BOWTIE2.out.bai), by: 0 )
+        .combine( FASTQ_ALIGN_BOWTIE2.out.bam.join(FASTQ_ALIGN_BOWTIE2.out.index), by: 0 )
         // Add taxid and seqids to meta so samtools view $args2 can reference it
         .map { meta, taxid, seqids, bam, bai -> [ meta + [ taxid: taxid, seqids: seqids ], bam, bai ] }
         .set{ ch_taxid_seqrefs }
@@ -235,7 +235,7 @@ workflow AMETA {
             with_idx: fai.exists()
                 return tuple(meta, fai)
             fas_only: !fai.exists()
-                return tuple(meta, fasta)
+                return tuple(meta, fasta, [])
         }
     SAMTOOLS_FAIDX (
         ch_samtoolsfa.fas_only,
