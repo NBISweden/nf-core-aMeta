@@ -8,7 +8,8 @@ process KRONA_KTUPDATETAXONOMY {
 
     output:
     path 'taxonomy/taxonomy.tab', emit: db
-    tuple val("${task.process}"), val('krona'), eval("ktImportTaxonomy | grep -Po '(?<=KronaTools )[0-9.]+'"), topic: versions, emit: versions_krona
+    // tuple val("${task.process}"), val('krona'), eval("ktImportTaxonomy | grep -Po '(?<=KronaTools )[0-9.]+'"), topic: versions, emit: versions_krona
+    tuple val("${task.process}"), val('krona'), val("2.8.1"), topic: versions, emit: versions_krona
 
     when:
     task.ext.when == null || task.ext.when
