@@ -139,10 +139,10 @@ workflow AMETA {
                     dbdir.resolve('seqid2taxid.map') // custom map
                 ]
         }
-    KRAKENUNIQ_BUILD ( ch_kdb.build, false ) // custom fasta, keep_intermediates
+    KRAKENUNIQ_BUILD ( ch_kdb.build, true ) // custom fasta, keep_intermediates (TODO: setting to false deletes input files)
     ch_krakenuniq_db = KRAKENUNIQ_BUILD.out.db.mix(ch_kdb.as_is).collect{ _meta, db -> db }
     KRAKENUNIQ_PRELOADEDKRAKENUNIQ(
-        CUTADAPT.out.reads,               // [ meta, fastqs ]
+        CUTADAPT.out.reads.map{ meta, fq -> tuple(meta, fq, [ meta.id ] )}, // [ meta, fastqs, prefixes ]
         'fastq',                          // fastq/fasta
         ch_krakenuniq_db,                 // db
         true,                             // save_output_reads
