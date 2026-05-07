@@ -8,7 +8,7 @@ include { BAM_SORT_STATS_SAMTOOLS } from '../bam_sort_stats_samtools/main'
 workflow FASTQ_ALIGN_BOWTIE2 {
     take:
     ch_reads // channel: [ val(meta), [ reads ] ]
-    ch_index // channel: /path/to/bowtie2/index/
+    ch_index // channel: [ val(meta), /path/to/bowtie2/index/ ]
     save_unaligned // val
     sort_bam // val
     ch_fasta_fai // channel: [ val(meta), path(fasta), path(fai) ]
