@@ -79,7 +79,7 @@ workflow AMETA {
     //
     // SUBWORKFLOW: QC
     //
-    FASTQC_RAW ( // TODO: Move versions to topic channels!
+    FASTQC_RAW (
         ch_samplesheet
     )
     CUTADAPT (
@@ -93,24 +93,37 @@ workflow AMETA {
     // SUBWORKFLOW: ALIGN
     //
     ch_reference = channel.fromPath( params.bowtie2_db, checkIfExists: true)
-        .map{ file -> [ [ id: file.baseName ], file ] }
-    ch_bowtie2 = ch_reference
+        .map{ file -> tuple([ id: file.baseName ], file) }
+    ch_samtoolsfa = ch_reference
         .branch { meta, fasta ->
+            def fai = file("${fasta}.fai")
+            idx: fai.exists()
+                return tuple(meta, fai)
+            fas_only: !fai.exists()
+                return tuple(meta, fasta, [])
+        }
+    SAMTOOLS_FAIDX (
+        ch_samtoolsfa.fas_only,
+        [ [], [] ] // Empty fai
+    )
+    ch_ref_with_index = ch_reference.join(SAMTOOLS_FAIDX.out.fai.mix(ch_samtoolsfa.idx))
+    ch_bowtie2 = ch_ref_with_index
+        .branch { meta, fasta, fai ->
             def indices = ['1.bt2l','2.bt2l','3.bt2l','4.bt2l','rev.1.bt2l','rev.2.bt2l'].collect{ suffix -> file("${fasta}.${suffix}") }
             def indices_present = indices.every { file -> file.exists() }
             with_idx: indices_present
                 return tuple(meta, fasta.parent)
             ref_only: !indices_present
-                return tuple(meta, fasta, [])
+                return tuple(meta, fasta, fai)
         }
     BOWTIE2_BUILD(ch_bowtie2.ref_only)
-    ch_bt2index = BOWTIE2_BUILD.out.index.mix(ch_bowtie2.with_idx).collect()
+    ch_bt2index = BOWTIE2_BUILD.out.index.mix(ch_bowtie2.with_idx)
     FASTQ_ALIGN_BOWTIE2(
-        CUTADAPT.out.reads,    // ch_reads
-        ch_bt2index,           // ch_index
-        false,                 // save unaligned
-        false,                 // sort bam
-        ch_reference.collect() // ch_fasta
+        CUTADAPT.out.reads,         // ch_reads [ meta, reads ]
+        ch_bt2index.collect(),      // ch_index [ meta, bt2idx ]
+        false,                      // save unaligned
+        false,                      // sort bam
+        ch_ref_with_index.collect() // ch_fasta [ meta, ref, refidx ]
     )
 
     // SUBWORKFLOW: KRAKENUNIQ
@@ -231,23 +244,6 @@ workflow AMETA {
         // Download from https://github.com/husonlab/megan-ce/tree/master/src/megan/resources/files
     )
     POSTPROCESSINGAMPS( MAKENODELIST.out.node_list.join(MALTEXTRACT.out.results) )
-    ch_samtoolsfa = ch_reference
-        .branch { meta, fasta ->
-            def fai = file("${fasta}.fai")
-            with_idx: fai.exists()
-                return tuple(meta, fai)
-            fas_only: !fai.exists()
-                return tuple(meta, fasta, [])
-        }
-    SAMTOOLS_FAIDX (
-        ch_samtoolsfa.fas_only,
-        [ [], [] ] // Empty fai
-    )
-    malt_nt_fasta = ch_reference.join( SAMTOOLS_FAIDX.out.fai.mix(ch_samtoolsfa.with_idx) )
-        .multiMap { _meta, fasta, fai ->
-            fasta: fasta
-            fai  : fai
-        }
     ch_alignments_per_taxid = MALT_RUN.out.alignments
         .combine(
             MALTEXTRACT.out.results
@@ -255,6 +251,11 @@ workflow AMETA {
             by: 0
         )
         .map { meta, aln, taxid, results -> [ meta + [taxid: taxid], aln, results ] }
+    malt_nt_fasta = ch_ref_with_index
+        .multiMap { _meta, fasta, fai ->
+            fasta: fasta
+            fai  : fai
+        }
     BREADTHOFCOVERAGE (
         ch_alignments_per_taxid,
         malt_nt_fasta.fasta.collect(),
