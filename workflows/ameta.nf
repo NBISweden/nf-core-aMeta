@@ -141,7 +141,7 @@ workflow AMETA {
         }
     KRAKENUNIQ_BUILD ( ch_kdb.build, true ) // custom fasta, keep_intermediates (TODO: setting to false deletes input files)
     ch_krakenuniq_db = KRAKENUNIQ_BUILD.out.db.mix(ch_kdb.as_is).collect{ _meta, db -> db }
-    KRAKENUNIQ_PRELOADEDKRAKENUNIQ(
+    KRAKENUNIQ_PRELOADEDKRAKENUNIQ( // TODO: This should probably take all inputs at once.
         CUTADAPT.out.reads.map{ meta, fq -> tuple(meta, fq, [ meta.id ] )}, // [ meta, fastqs, prefixes ]
         'fastq',                          // fastq/fasta
         ch_krakenuniq_db,                 // db
@@ -182,7 +182,7 @@ workflow AMETA {
     WRITESEQIDS ( ch_taxid_seqrefs )
     SAMTOOLS_VIEW (
         ch_taxid_seqrefs, // bam files
-        [ [] , [] ],      // Empty fasta reference
+        [ [] , [], [] ],  // Empty fasta reference // TODO: Should this be empty? or ch_ref_with_index?
         [ [] , [] ],      // Empty qname file
         [ [] , [] ],      // Empty bed file
         "csi"
@@ -202,7 +202,7 @@ workflow AMETA {
         MALT_PREPAREDB.out.library,
         [],
         file(params.malt_accession2taxid, checkIfExists: true),
-        "-acc2taxa"
+        "a2t" // --acc2taxa - deprecated flag
     )
     MALT_RUN (
         CUTADAPT.out.reads,
