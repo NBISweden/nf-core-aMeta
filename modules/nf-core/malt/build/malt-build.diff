@@ -1,0 +1,29 @@
+Changes in component 'nf-core/malt/build'
+'modules/nf-core/malt/build/environment.yml' is unchanged
+'modules/nf-core/malt/build/meta.yml' is unchanged
+Changes in 'malt/build/main.nf':
+--- modules/nf-core/malt/build/main.nf
++++ modules/nf-core/malt/build/main.nf
+@@ -23,8 +23,6 @@
+     def args = task.ext.args ?: ''
+     def igff = gff ? "-igff ${gff}" : ""
+     """
+-    INDEX=`find -L . \\( -name '*.db' -o -name '*.abin' \\) -type f`
+-    echo \$INDEX
+     malt-build \\
+         ${args} \\
+         -v \\
+@@ -32,7 +30,7 @@
+         ${igff} \\
+         -d 'malt_index/' \\
+         -t ${task.cpus} \\
+-        -${map_type} \$INDEX |&tee malt-build.log
++        -${map_type} ${mapping_db} |& tee malt-build.log
+ 
+     cat <<-END_VERSIONS > versions.yml
+     "${task.process}":
+
+'modules/nf-core/malt/build/tests/main.nf.test.snap' is unchanged
+'modules/nf-core/malt/build/tests/nextflow.config' is unchanged
+'modules/nf-core/malt/build/tests/main.nf.test' is unchanged
+************************************************************
