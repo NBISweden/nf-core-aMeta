@@ -20,7 +20,6 @@ __pycache__/
 *.pyd
 *.egg-info/
 dist/
-build/
 
 # macOS
 .DS_Store
