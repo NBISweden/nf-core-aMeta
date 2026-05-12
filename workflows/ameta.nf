@@ -133,13 +133,13 @@ workflow AMETA {
                 return [ [ id: dbdir.name ], dbdir ] // meta, db
             build: true
                 return [
-                    [ id: dbdir.name ],              // meta
-                    dbdir.resolve('library'),        // library dir
-                    dbdir.resolve('taxonomy'),       // taxonomy dir
-                    dbdir.resolve('seqid2taxid.map') // custom map
+                    [ id: dbdir.name ],                    // meta
+                    dbdir.resolve('library').listDirectory(),  // library dir
+                    dbdir.resolve('taxonomy').listDirectory(), // taxonomy dir
+                    dbdir.resolve('seqid2taxid.map')       // custom map
                 ]
         }
-    KRAKENUNIQ_BUILD ( ch_kdb.build, true ) // custom fasta, keep_intermediates (TODO: setting to false deletes input files)
+    KRAKENUNIQ_BUILD ( ch_kdb.build, false ) // custom fasta, keep_intermediates
     ch_krakenuniq_db = KRAKENUNIQ_BUILD.out.db.mix(ch_kdb.as_is).collect{ _meta, db -> db }
     KRAKENUNIQ_PRELOADEDKRAKENUNIQ( // TODO: This should probably take all inputs at once.
         CUTADAPT.out.reads.map{ meta, fq -> tuple(meta, fq, [ meta.id ] )}, // [ meta, fastqs, prefixes ]
