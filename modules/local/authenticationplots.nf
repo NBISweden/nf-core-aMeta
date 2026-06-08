@@ -12,6 +12,7 @@ process AUTHENTICATIONPLOTS {
 
     output:
     tuple val(meta), path("*.pdf"), emit: pdf
+    tuple val(meta), path("*.png"), emit: png
     tuple val("${task.process}"), val('r-base'), eval("R --version |& sed '1!d; s/R version //; s/ .*//'"), topic: versions, emit: versions_rbase
 
     when:
