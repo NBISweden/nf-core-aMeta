@@ -276,9 +276,11 @@ workflow AMETA {
         .combine(
             MALTEXTRACT.out.results
                 .join( BREADTHOFCOVERAGE.out.name_list )
+                .join( BREADTHOFCOVERAGE.out.breadth_of_coverage )
+                .join( BREADTHOFCOVERAGE.out.read_length )
                 .join( MAKENODELIST.out.node_list )
                 .join( PMDTOOLS_SCORE.out.pmd_scores )
-                .map{ meta, maltex_dir, name_list, node_list, pmd -> [ meta - meta.subMap('taxid'), meta.taxid, maltex_dir, name_list, node_list, pmd ] },
+                .map{ meta, maltex_dir, name_list, breadth, read_length, node_list, pmd -> [ meta - meta.subMap('taxid'), meta.taxid, maltex_dir, name_list, node_list, pmd, breadth, read_length ] },
             by: 0
         )
         .map { meta, rma6, taxid, maltex_dir, name_list, node_list, pmd ->
