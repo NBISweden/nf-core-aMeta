@@ -108,4 +108,4 @@ mtext(paste0("Organism: ", organism, ", taxID: ", taxid, ", rma6-file: ", RMA6),
 dev.off()
 
 
-system(paste0("convert -density 300 -background white -alpha remove", paste0(out_dir, "/", "authentic_Sample_", RMA6, "_TaxID_", taxid, ".pdf"), " ", paste0(out_dir, "/", "authentic_Sample_", RMA6, "_TaxID_", taxid, ".png")))
+system(paste0("convert -density 300 -background white -alpha remove ", paste0(out_dir, "/", "authentic_Sample_", RMA6, "_TaxID_", taxid, ".pdf"), " ", paste0(out_dir, "/", "authentic_Sample_", RMA6, "_TaxID_", taxid, ".png")))
