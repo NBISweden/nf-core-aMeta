@@ -155,14 +155,16 @@ workflow AMETA {
         params.n_tax_reads,
         file( params.pathogenomes_found, checkIfExists: true )
     )
-    KRAKENUNIQ_TOKRONA(
-        KRAKENUNIQ_FILTER.out.filtered.join(KRAKENUNIQ_PRELOADEDKRAKENUNIQ.out.classified_assignment)
-    )
-    KRONA_KTUPDATETAXONOMY()
-    KRONA_KTIMPORTTAXONOMY(
-        KRAKENUNIQ_TOKRONA.out.krona,
-        params.krona_taxonomy_file ? file( params.krona_taxonomy_file, checkIfExists: true ) : KRONA_KTUPDATETAXONOMY.out.db
-    )
+    if (params.run_krona.toBoolean()) {
+        KRAKENUNIQ_TOKRONA(
+            KRAKENUNIQ_FILTER.out.filtered.join(KRAKENUNIQ_PRELOADEDKRAKENUNIQ.out.classified_assignment)
+        )
+        KRONA_KTUPDATETAXONOMY()
+        KRONA_KTIMPORTTAXONOMY(
+            KRAKENUNIQ_TOKRONA.out.krona,
+            params.krona_taxonomy_file ? file( params.krona_taxonomy_file, checkIfExists: true ) : KRONA_KTUPDATETAXONOMY.out.db
+        )
+    }
     KRAKENUNIQ_ABUNDANCEMATRIX(
         KRAKENUNIQ_FILTER.out.filtered.collect{ _meta, filtered -> filtered },
         params.n_unique_kmers,
@@ -170,126 +172,138 @@ workflow AMETA {
     )
 
     // SUBWORKFLOW: Map Damage
-    channel.fromPath( params.bowtie2_seqid2taxid_db, checkIfExists: true )
-        .flatMap{ tsv -> tsv.splitCsv(header:false, sep:"\t")*.reverse() }
-        .groupTuple() // [ taxid, [ ref1, ref2, ref3 ] ]
-        .combine( KRAKENUNIQ_FILTER.out.species_tax_id.flatMap{ meta, txt -> txt.splitText().collect{ line -> [ line.trim(), meta ] } }, by: 0 )
-        .map { taxid, seqids, meta -> [ meta, taxid, seqids ] }
-        .combine( FASTQ_ALIGN_BOWTIE2.out.bam.join(FASTQ_ALIGN_BOWTIE2.out.index), by: 0 )
-        // Add taxid and seqids to meta so samtools view $args2 can reference it
-        .map { meta, taxid, seqids, bam, bai -> [ meta + [ taxid: taxid, seqids: seqids ], bam, bai ] }
-        .set{ ch_taxid_seqrefs }
-    WRITESEQIDS ( ch_taxid_seqrefs )
-    SAMTOOLS_VIEW (
-        ch_taxid_seqrefs, // bam files
-        [ [] , [], [] ],  // Empty fasta reference // TODO: Should this be empty? or ch_ref_with_index?
-        [ [] , [] ],      // Empty qname file
-        [ [] , [] ],      // Empty bed file
-        "csi"
-    )
-    MAPDAMAGE2 (
-        SAMTOOLS_VIEW.out.bam,
-        ch_reference.collect{ _meta, fasta -> fasta }
-    )
-
-    // SUBWORKFLOW: Malt
-    MALT_PREPAREDB (
-        KRAKENUNIQ_ABUNDANCEMATRIX.out.species_taxid_list,
-        file(params.malt_seqid2taxid_db, checkIfExists: true),
-        file(params.malt_nt_fasta, checkIfExists: true)
-    )
-    MALT_BUILD (
-        MALT_PREPAREDB.out.library,
-        [],
-        file(params.malt_accession2taxid, checkIfExists: true),
-        "a2t" // --acc2taxa - deprecated flag
-    )
-    MALT_RUN (
-        CUTADAPT.out.reads,
-        MALT_BUILD.out.index.collect()
-    )
-    MALT_QUANTIFYABUNDANCE (
-        MALT_RUN.out.alignments,
-        KRAKENUNIQ_ABUNDANCEMATRIX.out.species_taxid_list.collect()
-    )
-    MALT_ABUNDANCEMATRIXSAM (
-        MALT_QUANTIFYABUNDANCE.out.counts.collect{ _meta, counts -> counts },
-        KRAKENUNIQ_ABUNDANCEMATRIX.out.species_names_list
-    )
-    MALT_ABUNDANCEMATRIXRMA6 ( MALT_RUN.out.rma6.collect{ _meta, rma6 -> rma6 } )
-
-    // SUBWORKFLOW: authentic
-    // Rule: Create_Sample_TaxID_Directories, however taxid is added to meta data instead
-    ch_species_with_taxid = KRAKENUNIQ_FILTER.out.species_tax_id
-        .flatMap{ meta, taxids -> taxids.splitCsv(header: false, sep: '\t').collect{ row -> meta + [ taxid: row.head() ] } }
-    MAKENODELIST (
-        ch_species_with_taxid,
-        ch_krakenuniq_db // Contains the taxDB
-    )
-    ch_maltextract = MALT_RUN.out.rma6.combine(
-        MAKENODELIST.out.node_list
-            .map{ meta, node_list -> [ meta.subMap(meta.keySet() - 'taxid'), meta.taxid, node_list ] },
-        by: 0
-    )
-    .multiMap { meta, rma6, taxid, node_list ->
-        rma6: [ meta + [taxid: taxid], rma6 ]
-        node_list: node_list
+    def ch_mapdamage_bam = channel.empty()
+    if (params.run_mapdamage.toBoolean()) {
+        channel.fromPath( params.bowtie2_seqid2taxid_db, checkIfExists: true )
+            .flatMap{ tsv -> tsv.splitCsv(header:false, sep:"\t")*.reverse() }
+            .groupTuple() // [ taxid, [ ref1, ref2, ref3 ] ]
+            .combine( KRAKENUNIQ_FILTER.out.species_tax_id.flatMap{ meta, txt -> txt.splitText().collect{ line -> [ line.trim(), meta ] } }, by: 0 )
+            .map { taxid, seqids, meta -> [ meta, taxid, seqids ] }
+            .combine( FASTQ_ALIGN_BOWTIE2.out.bam.join(FASTQ_ALIGN_BOWTIE2.out.index), by: 0 )
+            // Add taxid and seqids to meta so samtools view $args2 can reference it
+            .map { meta, taxid, seqids, bam, bai -> [ meta + [ taxid: taxid, seqids: seqids ], bam, bai ] }
+            .set{ ch_taxid_seqrefs }
+        WRITESEQIDS ( ch_taxid_seqrefs )
+        SAMTOOLS_VIEW (
+            ch_taxid_seqrefs, // bam files
+            [ [] , [], [] ],  // Empty fasta reference // TODO: Should this be empty? or ch_ref_with_index?
+            [ [] , [] ],      // Empty qname file
+            [ [] , [] ],      // Empty bed file
+            "csi"
+        )
+        MAPDAMAGE2 (
+            SAMTOOLS_VIEW.out.bam,
+            ch_reference.collect{ _meta, fasta -> fasta }
+        )
+        ch_mapdamage_bam = SAMTOOLS_VIEW.out.bam
     }
 
-    MALTEXTRACT (
-        ch_maltextract.rma6,
-        ch_maltextract.node_list,
-        file( params.ncbi_dir, type: 'dir' ) // * checkIfExists skipped as Malt will create the folder contents automatically,
-        // unless offline in which case a local path to `ncbi` dir should be supplied with the ncbi.tre and ncbi.map inside
-        // Download from https://github.com/husonlab/megan-ce/tree/master/src/megan/resources/files
-    )
-    POSTPROCESSINGAMPS( MAKENODELIST.out.node_list.join(MALTEXTRACT.out.results) )
-    ch_alignments_per_taxid = MALT_RUN.out.alignments
-        .combine(
-            MALTEXTRACT.out.results
-                .map{ meta, results -> [ meta.subMap(meta.keySet() - 'taxid'), meta.taxid, results ] },
-            by: 0
+    // SUBWORKFLOW: Malt
+    def ch_malt_rma6 = channel.empty()
+    def ch_malt_alignments = channel.empty()
+    if (params.run_malt.toBoolean()) {
+        MALT_PREPAREDB (
+            KRAKENUNIQ_ABUNDANCEMATRIX.out.species_taxid_list,
+            file(params.malt_seqid2taxid_db, checkIfExists: true),
+            file(params.malt_nt_fasta, checkIfExists: true)
         )
-        .map { meta, aln, taxid, results -> [ meta + [taxid: taxid], aln, results ] }
-    malt_nt_fasta = ch_ref_with_index
-        .multiMap { _meta, fasta, fai ->
-            fasta: fasta
-            fai  : fai
-        }
-    BREADTHOFCOVERAGE (
-        ch_alignments_per_taxid,
-        malt_nt_fasta.fasta.collect(),
-        malt_nt_fasta.fai.collect(),
-    )
-    READLENGTHDISTRIBUTION ( BREADTHOFCOVERAGE.out.sorted_bam )
-    PMDTOOLS_SCORE ( BREADTHOFCOVERAGE.out.sorted_bam )
-    PMDTOOLS_DEAMINATION ( BREADTHOFCOVERAGE.out.sorted_bam )
-    AUTHENTICATIONPLOTS (
-        MAKENODELIST.out.node_list
-            .join( READLENGTHDISTRIBUTION.out.read_length )
-            .join( PMDTOOLS_SCORE.out.pmd_scores )
-            .join( BREADTHOFCOVERAGE.out.breadth_of_coverage )
-            .join( BREADTHOFCOVERAGE.out.name_list )
-            .join( MALTEXTRACT.out.results )
-    )
-    ch_authentication_score = MALT_RUN.out.rma6
-        .combine(
-            MALTEXTRACT.out.results
-                .join( BREADTHOFCOVERAGE.out.name_list )
-                .join( BREADTHOFCOVERAGE.out.breadth_of_coverage )
-                .join( READLENGTHDISTRIBUTION.out.read_length )
-                .join( MAKENODELIST.out.node_list )
-                .join( PMDTOOLS_SCORE.out.pmd_scores )
-                .map{ meta, maltex_dir, name_list, breadth, read_length, node_list, pmd -> [ meta - meta.subMap('taxid'), meta.taxid, maltex_dir, name_list, node_list, pmd, breadth, read_length ] },
-            by: 0
+        MALT_BUILD (
+            MALT_PREPAREDB.out.library,
+            [],
+            file(params.malt_accession2taxid, checkIfExists: true),
+            "a2t" // --acc2taxa - deprecated flag
         )
-        .map { meta, rma6, taxid, maltex_dir, name_list, node_list, pmd, breadth, read_length ->
-            [ meta + [ taxid: taxid ], rma6, maltex_dir, name_list, node_list, pmd, breadth, read_length ]
-        }
-    AUTHENTICATIONSCORE( ch_authentication_score )
+        MALT_RUN (
+            CUTADAPT.out.reads,
+            MALT_BUILD.out.index.collect()
+        )
+        MALT_QUANTIFYABUNDANCE (
+            MALT_RUN.out.alignments,
+            KRAKENUNIQ_ABUNDANCEMATRIX.out.species_taxid_list.collect()
+        )
+        MALT_ABUNDANCEMATRIXSAM (
+            MALT_QUANTIFYABUNDANCE.out.counts.collect{ _meta, counts -> counts },
+            KRAKENUNIQ_ABUNDANCEMATRIX.out.species_names_list
+        )
+        MALT_ABUNDANCEMATRIXRMA6 ( MALT_RUN.out.rma6.collect{ _meta, rma6 -> rma6 } )
+        ch_malt_rma6 = MALT_RUN.out.rma6
+        ch_malt_alignments = MALT_RUN.out.alignments
+    }
 
-    // SUBWORKFLOW: summary
-    PLOTAUTHENTICATIONSCORE( AUTHENTICATIONSCORE.out.authentication_scores.collect{ _meta, scores -> scores } )
+    // SUBWORKFLOW: authentic
+    if (params.run_authentication.toBoolean()) {
+        // Rule: Create_Sample_TaxID_Directories, however taxid is added to meta data instead
+        def ch_species_with_taxid = KRAKENUNIQ_FILTER.out.species_tax_id
+            .flatMap{ meta, taxids -> taxids.splitCsv(header: false, sep: '\t').collect{ row -> meta + [ taxid: row.head() ] } }
+        MAKENODELIST (
+            ch_species_with_taxid,
+            ch_krakenuniq_db // Contains the taxDB
+        )
+        def ch_maltextract = ch_malt_rma6.combine(
+            MAKENODELIST.out.node_list
+                .map{ meta, node_list -> [ meta.subMap(meta.keySet() - 'taxid'), meta.taxid, node_list ] },
+            by: 0
+        )
+        .multiMap { meta, rma6, taxid, node_list ->
+            rma6: [ meta + [taxid: taxid], rma6 ]
+            node_list: node_list
+        }
+
+        MALTEXTRACT (
+            ch_maltextract.rma6,
+            ch_maltextract.node_list,
+            file( params.ncbi_dir, type: 'dir' ) // * checkIfExists skipped as Malt will create the folder contents automatically,
+            // unless offline in which case a local path to `ncbi` dir should be supplied with the ncbi.tre and ncbi.map inside
+            // Download from https://github.com/husonlab/megan-ce/tree/master/src/megan/resources/files
+        )
+        POSTPROCESSINGAMPS( MAKENODELIST.out.node_list.join(MALTEXTRACT.out.results) )
+        def ch_alignments_per_taxid = ch_malt_alignments
+            .combine(
+                MALTEXTRACT.out.results
+                    .map{ meta, results -> [ meta.subMap(meta.keySet() - 'taxid'), meta.taxid, results ] },
+                by: 0
+            )
+            .map { meta, aln, taxid, results -> [ meta + [taxid: taxid], aln, results ] }
+        def malt_nt_fasta = ch_ref_with_index
+            .multiMap { _meta, fasta, fai ->
+                fasta: fasta
+                fai  : fai
+            }
+        BREADTHOFCOVERAGE (
+            ch_alignments_per_taxid,
+            malt_nt_fasta.fasta.collect(),
+            malt_nt_fasta.fai.collect(),
+        )
+        READLENGTHDISTRIBUTION ( BREADTHOFCOVERAGE.out.sorted_bam )
+        PMDTOOLS_SCORE ( BREADTHOFCOVERAGE.out.sorted_bam )
+        PMDTOOLS_DEAMINATION ( BREADTHOFCOVERAGE.out.sorted_bam )
+        AUTHENTICATIONPLOTS (
+            MAKENODELIST.out.node_list
+                .join( READLENGTHDISTRIBUTION.out.read_length )
+                .join( PMDTOOLS_SCORE.out.pmd_scores )
+                .join( BREADTHOFCOVERAGE.out.breadth_of_coverage )
+                .join( BREADTHOFCOVERAGE.out.name_list )
+                .join( MALTEXTRACT.out.results )
+        )
+        def ch_authentication_score = ch_malt_rma6
+            .combine(
+                MALTEXTRACT.out.results
+                    .join( BREADTHOFCOVERAGE.out.name_list )
+                    .join( BREADTHOFCOVERAGE.out.breadth_of_coverage )
+                    .join( READLENGTHDISTRIBUTION.out.read_length )
+                    .join( MAKENODELIST.out.node_list )
+                    .join( PMDTOOLS_SCORE.out.pmd_scores )
+                    .map{ meta, maltex_dir, name_list, breadth, read_length, node_list, pmd -> [ meta - meta.subMap('taxid'), meta.taxid, maltex_dir, name_list, node_list, pmd, breadth, read_length ] },
+                by: 0
+            )
+            .map { meta, rma6, taxid, maltex_dir, name_list, node_list, pmd, breadth, read_length ->
+                [ meta + [ taxid: taxid ], rma6, maltex_dir, name_list, node_list, pmd, breadth, read_length ]
+            }
+        AUTHENTICATIONSCORE( ch_authentication_score )
+
+        // SUBWORKFLOW: summary
+        PLOTAUTHENTICATIONSCORE( AUTHENTICATIONSCORE.out.authentication_scores.collect{ _meta, scores -> scores } )
+    }
 
     //
     // Collate and save software versions
