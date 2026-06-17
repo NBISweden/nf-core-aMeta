@@ -155,6 +155,8 @@ workflow AMETA {
         params.n_tax_reads,
         file( params.pathogenomes_found, checkIfExists: true )
     )
+    KRAKENUNIQ_FILTER.out.species_tax_id
+        .ifEmpty { log.warn "[NBISweden/ameta] No microbes passed the KrakenUniq filter thresholds (n_unique_kmers=${params.n_unique_kmers}, n_tax_reads=${params.n_tax_reads}). Downstream analyses will be skipped." }
     if (params.run_krona.toBoolean()) {
         KRAKENUNIQ_TOKRONA(
             KRAKENUNIQ_FILTER.out.filtered.join(KRAKENUNIQ_PRELOADEDKRAKENUNIQ.out.classified_assignment)
