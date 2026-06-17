@@ -185,10 +185,10 @@ workflow AMETA {
             .set{ ch_taxid_seqrefs }
         WRITESEQIDS ( ch_taxid_seqrefs )
         SAMTOOLS_VIEW (
-            ch_taxid_seqrefs, // bam files
-            [ [] , [], [] ],  // Empty fasta reference // TODO: Should this be empty? or ch_ref_with_index?
-            [ [] , [] ],      // Empty qname file
-            [ [] , [] ],      // Empty bed file
+            ch_taxid_seqrefs, // [meta(taxid+seqids), bam, bai] — seqids passed as region args via ext.args2
+            [ [] , [], [] ],  // no fasta reference
+            [ [] , [] ],      // no qname filter
+            [ [] , [] ],      // no bed filter
             "csi"
         )
         MAPDAMAGE2 (
