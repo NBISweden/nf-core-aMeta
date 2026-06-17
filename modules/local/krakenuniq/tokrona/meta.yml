@@ -1,0 +1,72 @@
+name: krakenuniq_tokrona
+description: |
+  Converts a KrakenUniq filtered classification report to Krona-compatible
+  format using krakenuniq2krona.py. Applies a minimum of 1000 unique k-mers
+  filter and formats the classified sequences for input to ktImportTaxonomy.
+keywords:
+  - krakenuniq
+  - krona
+  - visualisation
+  - metagenomics
+  - taxonomy
+tools:
+  - python:
+      description: Python programming language
+      homepage: https://www.python.org/
+      documentation: https://docs.python.org/
+      licence: ["PSF-2.0"]
+      identifier: ""
+  - pandas:
+      description: Python data analysis library
+      homepage: https://pandas.pydata.org/
+      documentation: https://pandas.pydata.org/docs/
+      licence: ["BSD-3-Clause"]
+      identifier: ""
+input:
+  - - meta:
+        type: map
+        description: |
+          Groovy Map containing sample information,
+          e.g. [ id:'sample1', single_end:true ]
+    - report:
+        type: file
+        description: Filtered KrakenUniq report (output of KRAKENUNIQ_FILTER)
+        pattern: "*.filtered"
+        ontologies: []
+    - sequences:
+        type: file
+        description: KrakenUniq classified sequences file
+        pattern: "*.krakenuniq.classified.txt"
+        ontologies: []
+output:
+  taxid_txt:
+    - - meta:
+          type: map
+          description: Groovy Map containing sample information
+      - "*_taxIDs_kmers1000.txt":
+          type: file
+          description: Tax IDs of species with ≥1000 unique k-mers, one per line
+          pattern: "*_taxIDs_kmers1000.txt"
+          ontologies: []
+  sequence_txt:
+    - - meta:
+          type: map
+          description: Groovy Map containing sample information
+      - "*_kmers1000.txt":
+          type: file
+          description: Classified sequences filtered to species with ≥1000 unique k-mers
+          pattern: "*_kmers1000.txt"
+          ontologies: []
+  krona:
+    - - meta:
+          type: map
+          description: Groovy Map containing sample information
+      - "*_kmers1000.krona":
+          type: file
+          description: Two-column (taxid, count) Krona input file for ktImportTaxonomy
+          pattern: "*_kmers1000.krona"
+          ontologies: []
+authors:
+  - "@mahesh-panchal"
+maintainers:
+  - "@mahesh-panchal"

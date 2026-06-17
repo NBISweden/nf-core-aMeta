@@ -1,0 +1,76 @@
+name: pmdtools_deamination
+description: |
+  Infers post-mortem deamination patterns from a BAM file using pmdtools with
+  the --platypus flag. Produces a deamination summary table and a PMD
+  fragmentation plot PDF for use in authentication reporting.
+keywords:
+  - pmdtools
+  - deamination
+  - post-mortem damage
+  - ancient DNA
+  - authentication
+tools:
+  - pmdtools:
+      description: Post-mortem damage tools for ancient DNA authentication
+      homepage: https://github.com/pontussk/PMDtools
+      documentation: https://github.com/pontussk/PMDtools
+      licence: ["GPL-3.0-or-later"]
+      identifier: ""
+  - samtools:
+      description: Utilities for the Sequence Alignment/Map (SAM) format
+      homepage: https://www.htslib.org/
+      documentation: https://www.htslib.org/doc/samtools.html
+      licence: ["MIT"]
+      identifier: "biotools:samtools"
+input:
+  - - meta:
+        type: map
+        description: |
+          Groovy Map containing sample and taxon information,
+          e.g. [ id:'sample1', taxid:'1234' ]
+    - bam:
+        type: file
+        description: Coordinate-sorted BAM file for the target taxon
+        pattern: "*.bam"
+        ontologies: []
+output:
+  pmd_temp:
+    - - meta:
+          type: map
+          description: Groovy Map containing sample and taxon information
+      - PMD_temp.txt:
+          type: file
+          description: Intermediate PMD statistics table from pmdtools --platypus
+          pattern: "PMD_temp.txt"
+          ontologies: []
+  pmd_plot_pdf:
+    - - meta:
+          type: map
+          description: Groovy Map containing sample and taxon information
+      - PMD_plot.frag.pdf:
+          type: file
+          description: PMD fragmentation pattern plot PDF
+          pattern: "PMD_plot.frag.pdf"
+          ontologies: []
+  r_out:
+    - - meta:
+          type: map
+          description: Groovy Map containing sample and taxon information
+      - plotPMD.Rout:
+          type: file
+          description: R console output from the PMD plotting script
+          pattern: "plotPMD.Rout"
+          ontologies: []
+  r_data:
+    - - meta:
+          type: map
+          description: Groovy Map containing sample and taxon information
+      - "*.RData":
+          type: file
+          description: R workspace image from PMD plotting
+          pattern: "*.RData"
+          ontologies: []
+authors:
+  - "@mahesh-panchal"
+maintainers:
+  - "@mahesh-panchal"

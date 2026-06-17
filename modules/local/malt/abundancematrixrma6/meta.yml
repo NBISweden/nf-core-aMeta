@@ -1,0 +1,37 @@
+name: malt_abundancematrixrma6
+description: |
+  Generates an abundance matrix from MALT RMA6 output files using MEGAN's
+  rma-tabuliser. Produces a species-by-sample read count matrix at the
+  species rank (`-r 'S'`).
+keywords:
+  - malt
+  - megan
+  - rma6
+  - abundance matrix
+  - metagenomics
+tools:
+  - megan:
+      description: MEtaGenome ANalyzer (MEGAN) Community Edition
+      homepage: https://uni-tuebingen.de/fakultaeten/mathematisch-naturwissenschaftliche-fakultaet/fachbereiche/informatik/lehrstuehle/algorithms-in-bioinformatics/software/megan6/
+      documentation: https://uni-tuebingen.de/fakultaeten/mathematisch-naturwissenschaftliche-fakultaet/fachbereiche/informatik/lehrstuehle/algorithms-in-bioinformatics/software/megan6/
+      licence: ["GPL-3.0-or-later"]
+      identifier: ""
+input:
+  - rma6:
+      type: file
+      description: |
+        Collection of RMA6 files from MALT_RUN, staged into an `rma6s/`
+        subdirectory
+      pattern: "*.rma6"
+      ontologies: []
+output:
+  abundance_matrix:
+    - "malt_abundance_matrix_rma6.txt":
+        type: file
+        description: Species-by-sample MALT RMA6 abundance matrix in tab-separated format
+        pattern: "malt_abundance_matrix_rma6.txt"
+        ontologies: []
+authors:
+  - "@mahesh-panchal"
+maintainers:
+  - "@mahesh-panchal"

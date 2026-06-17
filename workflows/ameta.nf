@@ -16,39 +16,39 @@ include { FASTQ_ALIGN_BOWTIE2 } from "../subworkflows/nf-core/fastq_align_bowtie
 // Krakenuniq subworkflow
 include { KRAKENUNIQ_PRELOADEDKRAKENUNIQ } from "../modules/nf-core/krakenuniq/preloadedkrakenuniq/"
 include { KRAKENUNIQ_BUILD               } from "../modules/nf-core/krakenuniq/build/main"
-include { KRAKENUNIQ_FILTER              } from "../modules/local/krakenuniq/filter"
-include { KRAKENUNIQ_TOKRONA             } from "../modules/local/krakenuniq/tokrona"
+include { KRAKENUNIQ_FILTER              } from "../modules/local/krakenuniq/filter/main"
+include { KRAKENUNIQ_TOKRONA             } from "../modules/local/krakenuniq/tokrona/main"
 include { KRONA_KTUPDATETAXONOMY         } from "../modules/nf-core/krona/ktupdatetaxonomy/main"
 include { KRONA_KTIMPORTTAXONOMY         } from "../modules/nf-core/krona/ktimporttaxonomy/main"
-include { KRAKENUNIQ_ABUNDANCEMATRIX     } from "../modules/local/krakenuniq/abundancematrix"
+include { KRAKENUNIQ_ABUNDANCEMATRIX     } from "../modules/local/krakenuniq/abundancematrix/main"
 
 // Damage subworkflow
-include { WRITESEQIDS   } from "../modules/local/writeseqids"
+include { WRITESEQIDS   } from "../modules/local/writeseqids/main"
 include { SAMTOOLS_VIEW } from "../modules/nf-core/samtools/view/main"
 include { MAPDAMAGE2    } from "../modules/nf-core/mapdamage2/main"
 
 // Malt subworkflow
-include { MALT_PREPAREDB           } from "../modules/local/malt/preparedb"
+include { MALT_PREPAREDB           } from "../modules/local/malt/preparedb/main"
 include { MALT_BUILD               } from "../modules/nf-core/malt/build/main"
 include { MALT_RUN                 } from "../modules/nf-core/malt/run/main"
-include { MALT_QUANTIFYABUNDANCE   } from "../modules/local/malt/quantifyabundance"
-include { MALT_ABUNDANCEMATRIXSAM  } from "../modules/local/malt/abundancematrixsam"
-include { MALT_ABUNDANCEMATRIXRMA6 } from "../modules/local/malt/abundancematrixrma6"
+include { MALT_QUANTIFYABUNDANCE   } from "../modules/local/malt/quantifyabundance/main"
+include { MALT_ABUNDANCEMATRIXSAM  } from "../modules/local/malt/abundancematrixsam/main"
+include { MALT_ABUNDANCEMATRIXRMA6 } from "../modules/local/malt/abundancematrixrma6/main"
 
 // Authentic subworkflow
-include { MAKENODELIST           } from "../modules/local/makenodelist"
+include { MAKENODELIST           } from "../modules/local/makenodelist/main"
 include { MALTEXTRACT            } from "../modules/nf-core/maltextract/main"
-include { POSTPROCESSINGAMPS     } from "../modules/local/postprocessingamps"
+include { POSTPROCESSINGAMPS     } from "../modules/local/postprocessingamps/main"
 include { SAMTOOLS_FAIDX         } from "../modules/nf-core/samtools/faidx/main"
-include { BREADTHOFCOVERAGE      } from "../modules/local/breadthofcoverage"
-include { READLENGTHDISTRIBUTION } from "../modules/local/readlengthdistribution"
-include { PMDTOOLS_SCORE         } from "../modules/local/pmdtools/score"
-include { PMDTOOLS_DEAMINATION   } from "../modules/local/pmdtools/deamination"
-include { AUTHENTICATIONPLOTS    } from "../modules/local/authenticationplots"
-include { AUTHENTICATIONSCORE    } from "../modules/local/authenticationscore"
+include { BREADTHOFCOVERAGE      } from "../modules/local/breadthofcoverage/main"
+include { READLENGTHDISTRIBUTION } from "../modules/local/readlengthdistribution/main"
+include { PMDTOOLS_SCORE         } from "../modules/local/pmdtools/score/main"
+include { PMDTOOLS_DEAMINATION   } from "../modules/local/pmdtools/deamination/main"
+include { AUTHENTICATIONPLOTS    } from "../modules/local/authenticationplots/main"
+include { AUTHENTICATIONSCORE    } from "../modules/local/authenticationscore/main"
 
 // summary subworkflow
-include { PLOTAUTHENTICATIONSCORE } from "../modules/local/plotauthenticationscore"
+include { PLOTAUTHENTICATIONSCORE } from "../modules/local/plotauthenticationscore/main"
 
 // include { FASTQC                 } from '../modules/nf-core/fastqc/main'
 include { MULTIQC                } from '../modules/nf-core/multiqc/main'

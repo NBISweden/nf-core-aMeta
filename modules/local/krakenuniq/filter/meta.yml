@@ -1,0 +1,101 @@
+name: krakenuniq_filter
+description: |
+  Filters KrakenUniq taxonomic classification reports by minimum unique k-mer
+  count and minimum read count thresholds, retaining only species-rank hits.
+  Also identifies pathogenic organisms against a reference list. Outputs
+  separate files for all species passing the filter and for pathogens,
+  along with taxon ID lists used downstream by MapDamage and authentication.
+keywords:
+  - krakenuniq
+  - filter
+  - taxonomy
+  - metagenomics
+  - pathogen
+  - ancient DNA
+tools:
+  - python:
+      description: Python programming language
+      homepage: https://www.python.org/
+      documentation: https://docs.python.org/
+      licence: ["PSF-2.0"]
+      identifier: ""
+  - pandas:
+      description: Python data analysis library
+      homepage: https://pandas.pydata.org/
+      documentation: https://pandas.pydata.org/docs/
+      licence: ["BSD-3-Clause"]
+      identifier: ""
+input:
+  - - meta:
+        type: map
+        description: |
+          Groovy Map containing sample information,
+          e.g. [ id:'sample1', single_end:true ]
+    - report:
+        type: file
+        description: KrakenUniq taxonomic classification report file
+        pattern: "*.krakenuniq.report.txt"
+        ontologies: []
+  - n_unique_kmers:
+      type: integer
+      description: Minimum number of unique k-mers required to retain a taxon
+  - n_tax_reads:
+      type: integer
+      description: Minimum number of reads required to retain a taxon
+  - pathogenomes_found:
+      type: file
+      description: Tab-separated reference file of known pathogenic organisms
+      pattern: "*.tab"
+      ontologies: []
+output:
+  pathogens:
+    - - meta:
+          type: map
+          description: Groovy Map containing sample information
+      - "*.pathogens":
+          type: file
+          description: Filtered KrakenUniq report retaining only pathogenic organisms
+          pattern: "*.pathogens"
+          ontologies: []
+  filtered:
+    - - meta:
+          type: map
+          description: Groovy Map containing sample information
+      - "*.filtered":
+          type: file
+          description: Filtered KrakenUniq report with all species passing thresholds
+          pattern: "*.filtered"
+          ontologies: []
+  pathogen_tax_id:
+    - - meta:
+          type: map
+          description: Groovy Map containing sample information
+      - "*.taxID.pathogens":
+          type: file
+          description: List of taxon IDs for pathogenic organisms, one per line
+          pattern: "*.taxID.pathogens"
+          ontologies: []
+  species_tax_id:
+    - - meta:
+          type: map
+          description: Groovy Map containing sample information
+      - "*.taxID.species":
+          type: file
+          description: |
+            List of taxon IDs for all species passing the filter thresholds,
+            one per line. Used as input to MapDamage and authentication steps.
+          pattern: "*.taxID.species"
+          ontologies: []
+  log:
+    - - meta:
+          type: map
+          description: Groovy Map containing sample information
+      - "*.krakenuniq_filter.log":
+          type: file
+          description: Log output from filter_krakenuniq.py
+          pattern: "*.krakenuniq_filter.log"
+          ontologies: []
+authors:
+  - "@mahesh-panchal"
+maintainers:
+  - "@mahesh-panchal"

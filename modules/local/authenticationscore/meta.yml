@@ -1,0 +1,76 @@
+name: authenticationscore
+description: |
+  Computes a quantitative authentication score for each sample-taxon combination
+  using the score.R script from HOPS. Incorporates breadth of coverage, read
+  length, and PMD scores with MaltExtract alignment statistics to produce a
+  single authenticity score per taxon per sample.
+keywords:
+  - hops
+  - score.R
+  - ancient DNA
+  - authentication
+  - metagenomics
+tools:
+  - hops:
+      description: HOPS (Heuristic Operations for Pathogen Screening) toolkit
+      homepage: https://github.com/rhuebler/HOPS
+      documentation: https://github.com/rhuebler/HOPS
+      licence: ["GPL-3.0-or-later"]
+      identifier: ""
+input:
+  - - meta:
+        type: map
+        description: |
+          Groovy Map containing sample and taxon information,
+          e.g. [ id:'sample1', taxid:'1234' ]
+    - rma6:
+        type: file
+        description: RMA6 file from MALT_RUN
+        pattern: "*.rma6"
+        ontologies: []
+    - malt_extract_dir:
+        type: directory
+        description: MaltExtract results directory
+        pattern: "*/"
+        ontologies: []
+    - name_list:
+        type: file
+        description: Name list from BREADTHOFCOVERAGE
+        pattern: "name_list.txt"
+        ontologies: []
+    - node_list:
+        type: file
+        description: Node list from MAKENODELIST
+        pattern: "node_list.txt"
+        ontologies: []
+    - pmd_scores:
+        type: file
+        description: PMD scores file from PMDTOOLS_SCORE
+        pattern: "*.PMDscores.txt"
+        ontologies: []
+    - breadth_of_coverage:
+        type: file
+        description: Breadth of coverage file from BREADTHOFCOVERAGE
+        pattern: "*.breadth_of_coverage"
+        ontologies: []
+    - read_length:
+        type: file
+        description: Read length distribution file from READLENGTHDISTRIBUTION
+        pattern: "*.read_length.txt"
+        ontologies: []
+output:
+  authentication_scores:
+    - - meta:
+          type: map
+          description: Groovy Map containing sample and taxon information
+      - "*.authentication_scores.txt":
+          type: file
+          description: |
+            Tab-separated file containing the authentication score and supporting
+            metrics for the sample-taxon combination.
+          pattern: "*.authentication_scores.txt"
+          ontologies: []
+authors:
+  - "@mahesh-panchal"
+maintainers:
+  - "@mahesh-panchal"

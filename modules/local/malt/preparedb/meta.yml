@@ -1,0 +1,67 @@
+name: malt_preparedb
+description: |
+  Prepares a project-specific FASTA database for MALT_BUILD by subsetting the
+  full nucleotide FASTA to only the reference sequences whose taxon IDs were
+  detected by KrakenUniq. Uses seqtk subseq to extract sequences by header and
+  produces the seqid2taxid mapping required by MALT_BUILD.
+keywords:
+  - malt
+  - database
+  - fasta
+  - seqtk
+  - metagenomics
+  - ancient DNA
+tools:
+  - seqtk:
+      description: Toolkit for processing sequences in FASTA/FASTQ formats
+      homepage: https://github.com/lh3/seqtk
+      documentation: https://github.com/lh3/seqtk
+      licence: ["MIT"]
+      identifier: ""
+input:
+  - unique_taxids:
+      type: file
+      description: |
+        File containing the unique set of taxon IDs detected across all samples
+        by KrakenUniq (from KRAKENUNIQ_ABUNDANCEMATRIX species_taxid_list output)
+      pattern: "*.txt"
+      ontologies: []
+  - seqid2taxid:
+      type: file
+      description: Full seqid-to-taxid mapping file for the bowtie2 database
+      pattern: "*.txt"
+      ontologies: []
+  - nt_fasta:
+      type: file
+      description: Full nucleotide FASTA file (nt or subset) used to build the bowtie2 DB
+      pattern: "*.{fna,fa,fasta}"
+      ontologies: []
+output:
+  seqid2taxid_map:
+    - "seqid2taxid.project.map":
+        type: file
+        description: Filtered seqid2taxid mapping file for the project subset
+        pattern: "seqid2taxid.project.map"
+        ontologies: []
+  seqids:
+    - "seqids.project":
+        type: file
+        description: List of sequence IDs to extract from the full FASTA
+        pattern: "seqids.project"
+        ontologies: []
+  headers:
+    - "project.headers":
+        type: file
+        description: FASTA headers for the project subset sequences
+        pattern: "project.headers"
+        ontologies: []
+  library_fasta:
+    - "library.project.fna":
+        type: file
+        description: Project-specific nucleotide FASTA subset for MALT_BUILD
+        pattern: "library.project.fna"
+        ontologies: []
+authors:
+  - "@mahesh-panchal"
+maintainers:
+  - "@mahesh-panchal"

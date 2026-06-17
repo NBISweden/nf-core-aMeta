@@ -1,0 +1,75 @@
+name: postprocessingamps
+description: |
+  Runs the HOPS postprocessing.AMPS.r script on MaltExtract output to produce
+  candidate ancient pathogen profiles. Generates an RData workspace, heatmap
+  PDFs and TSVs, and per-taxon candidate profile PDFs.
+keywords:
+  - hops
+  - maltextract
+  - ancient DNA
+  - authentication
+  - pathogen
+tools:
+  - hops:
+      description: HOPS (Heuristic Operations for Pathogen Screening) toolkit
+      homepage: https://github.com/rhuebler/HOPS
+      documentation: https://github.com/rhuebler/HOPS
+      licence: ["GPL-3.0-or-later"]
+      identifier: ""
+input:
+  - - meta:
+        type: map
+        description: |
+          Groovy Map containing sample and taxon information,
+          e.g. [ id:'sample1', taxid:'1234' ]
+    - node_list:
+        type: file
+        description: node_list.txt produced by MAKENODELIST
+        pattern: "node_list.txt"
+        ontologies: []
+    - malt_extract:
+        type: directory
+        description: MaltExtract output directory (staged as a copy to avoid reentrancy issues)
+        pattern: "*/"
+        ontologies: []
+output:
+  r_data:
+    - - meta:
+          type: map
+          description: Groovy Map containing sample and taxon information
+      - "*.RData":
+          type: file
+          description: R workspace from HOPS postprocessing
+          pattern: "*.RData"
+          ontologies: []
+  heatmap_pdf:
+    - - meta:
+          type: map
+          description: Groovy Map containing sample and taxon information
+      - "*.heatmap.pdf":
+          type: file
+          description: Heatmap PDF summary of ancient DNA authentication criteria
+          pattern: "*.heatmap.pdf"
+          ontologies: []
+  heatmap_tsv:
+    - - meta:
+          type: map
+          description: Groovy Map containing sample and taxon information
+      - "*.heatmap.tsv":
+          type: file
+          description: Heatmap data in tab-separated format
+          pattern: "*.heatmap.tsv"
+          ontologies: []
+  pdf_candidate_profiles:
+    - - meta:
+          type: map
+          description: Groovy Map containing sample and taxon information
+      - "*.pdf":
+          type: file
+          description: Per-taxon candidate ancient pathogen profile PDFs
+          pattern: "*.pdf"
+          ontologies: []
+authors:
+  - "@mahesh-panchal"
+maintainers:
+  - "@mahesh-panchal"

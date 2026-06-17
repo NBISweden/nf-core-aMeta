@@ -1,0 +1,48 @@
+name: pmdtools_score
+description: |
+  Computes PMD (post-mortem damage) scores for each read aligned to a target
+  organism using pmdtools. PMD scores are used as an ancient DNA damage
+  indicator in the authentication workflow.
+keywords:
+  - pmdtools
+  - post-mortem damage
+  - ancient DNA
+  - authentication
+tools:
+  - pmdtools:
+      description: Post-mortem damage tools for ancient DNA authentication
+      homepage: https://github.com/pontussk/PMDtools
+      documentation: https://github.com/pontussk/PMDtools
+      licence: ["GPL-3.0-or-later"]
+      identifier: ""
+  - samtools:
+      description: Utilities for the Sequence Alignment/Map (SAM) format
+      homepage: https://www.htslib.org/
+      documentation: https://www.htslib.org/doc/samtools.html
+      licence: ["MIT"]
+      identifier: "biotools:samtools"
+input:
+  - - meta:
+        type: map
+        description: |
+          Groovy Map containing sample and taxon information,
+          e.g. [ id:'sample1', taxid:'1234' ]
+    - bam:
+        type: file
+        description: Coordinate-sorted BAM file for the target taxon
+        pattern: "*.bam"
+        ontologies: []
+output:
+  pmd_scores:
+    - - meta:
+          type: map
+          description: Groovy Map containing sample and taxon information
+      - "*.PMDscores.txt":
+          type: file
+          description: Per-read PMD scores file. Used as input to AUTHENTICATIONPLOTS.
+          pattern: "*.PMDscores.txt"
+          ontologies: []
+authors:
+  - "@mahesh-panchal"
+maintainers:
+  - "@mahesh-panchal"

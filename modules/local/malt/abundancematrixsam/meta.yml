@@ -1,0 +1,51 @@
+name: malt_abundancematrixsam
+description: |
+  Generates an abundance matrix from per-sample MALT SAM count files using R
+  and the pheatmap package. Combines counts across all samples into a single
+  species-by-sample matrix.
+keywords:
+  - malt
+  - abundance matrix
+  - sam
+  - heatmap
+  - metagenomics
+  - visualisation
+tools:
+  - r-base:
+      description: The R statistical computing environment
+      homepage: https://www.r-project.org/
+      documentation: https://www.r-project.org/
+      licence: ["GPL-2.0-or-later"]
+      identifier: ""
+  - r-pheatmap:
+      description: R package for pretty heatmaps
+      homepage: https://cran.r-project.org/package=pheatmap
+      documentation: https://cran.r-project.org/package=pheatmap
+      licence: ["GPL-2.0-or-later"]
+      identifier: ""
+input:
+  - counts:
+      type: file
+      description: |
+        Collection of per-sample count files from MALT_QUANTIFYABUNDANCE,
+        staged into a `counts/` subdirectory
+      pattern: "*_counts.txt"
+      ontologies: []
+  - species_names_list:
+      type: file
+      description: |
+        Ordered species names list from KRAKENUNIQ_ABUNDANCEMATRIX, used to
+        label matrix rows
+      pattern: "*.species_names.txt"
+      ontologies: []
+output:
+  abundance_matrix:
+    - "malt_abundance_matrix_sam.txt":
+        type: file
+        description: Species-by-sample MALT SAM abundance matrix in tab-separated format
+        pattern: "malt_abundance_matrix_sam.txt"
+        ontologies: []
+authors:
+  - "@mahesh-panchal"
+maintainers:
+  - "@mahesh-panchal"

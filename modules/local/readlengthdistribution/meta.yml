@@ -1,0 +1,45 @@
+name: readlengthdistribution
+description: |
+  Computes the read length distribution from a BAM file using samtools view
+  and awk. Counts the number of reads at each read length, producing a
+  two-column (length, count) text file used in authentication plots.
+keywords:
+  - read length
+  - samtools
+  - ancient DNA
+  - authentication
+  - metagenomics
+tools:
+  - samtools:
+      description: Utilities for the Sequence Alignment/Map (SAM) format
+      homepage: https://www.htslib.org/
+      documentation: https://www.htslib.org/doc/samtools.html
+      licence: ["MIT"]
+      identifier: "biotools:samtools"
+input:
+  - - meta:
+        type: map
+        description: |
+          Groovy Map containing sample and taxon information,
+          e.g. [ id:'sample1', taxid:'1234' ]
+    - bam:
+        type: file
+        description: Coordinate-sorted BAM file
+        pattern: "*.bam"
+        ontologies: []
+output:
+  read_length:
+    - - meta:
+          type: map
+          description: Groovy Map containing sample and taxon information
+      - "*.read_length.txt":
+          type: file
+          description: |
+            Two-column tab-separated file of read length and count.
+            Used as input to AUTHENTICATIONPLOTS.
+          pattern: "*.read_length.txt"
+          ontologies: []
+authors:
+  - "@mahesh-panchal"
+maintainers:
+  - "@mahesh-panchal"

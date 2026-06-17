@@ -1,0 +1,51 @@
+name: writeseqids
+description: |
+  Writes per-taxon reference sequence ID files from sample metadata. A native
+  Groovy exec process — no external tool is invoked. Each output file lists the
+  reference sequence IDs (from bowtie2_seqid2taxid) belonging to a given
+  taxonomic identifier, one ID per line.
+keywords:
+  - seqids
+  - taxid
+  - ancient DNA
+  - metagenomics
+tools:
+  - nextflow:
+      description: Data-driven computational pipeline framework
+      homepage: https://www.nextflow.io/
+      documentation: https://www.nextflow.io/docs/latest/
+      licence: ["Apache-2.0"]
+      identifier: ""
+input:
+  - - meta:
+        type: map
+        description: |
+          Groovy Map containing sample and taxon information.
+          Must include a `seqids` key with a list of reference sequence IDs,
+          e.g. [ id:'sample1', taxid:'1234', seqids:['seq1','seq2'] ]
+    - bam:
+        type: file
+        description: BAM file (present only to satisfy channel shape; not read by this process)
+        pattern: "*.bam"
+        ontologies: []
+    - bai:
+        type: file
+        description: BAM index file (present only to satisfy channel shape; not read by this process)
+        pattern: "*.bai"
+        ontologies: []
+output:
+  seq_ids:
+    - - meta:
+          type: map
+          description: Groovy Map containing sample and taxon information
+      - "*.seq_ids":
+          type: file
+          description: |
+            Text file listing reference sequence IDs for the taxon, one per line.
+            Named `{taxid}.seq_ids`.
+          pattern: "*.seq_ids"
+          ontologies: []
+authors:
+  - "@mahesh-panchal"
+maintainers:
+  - "@mahesh-panchal"

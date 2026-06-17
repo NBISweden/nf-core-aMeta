@@ -1,0 +1,55 @@
+name: malt_quantifyabundance
+description: |
+  Quantifies MALT alignment abundance from compressed SAM output using
+  malt_quantify_abundance.py. Counts the number of reads aligned to each
+  reference sequence per sample, producing a per-sample counts file used
+  to build the MALT SAM abundance matrix.
+keywords:
+  - malt
+  - abundance
+  - sam
+  - metagenomics
+  - ancient DNA
+tools:
+  - python:
+      description: Python programming language
+      homepage: https://www.python.org/
+      documentation: https://docs.python.org/
+      licence: ["PSF-2.0"]
+      identifier: ""
+input:
+  - - meta:
+        type: map
+        description: |
+          Groovy Map containing sample information,
+          e.g. [ id:'sample1', single_end:true ]
+    - sam:
+        type: file
+        description: |
+          Gzip-compressed SAM file produced by MALT_RUN. MALT always writes
+          gzip-compressed SAM regardless of the output filename extension.
+        pattern: "*.sam.gz"
+        ontologies: []
+  - unique_taxids:
+      type: file
+      description: |
+        File listing the unique set of taxon IDs to quantify (from
+        KRAKENUNIQ_ABUNDANCEMATRIX species_taxid_list output)
+      pattern: "*.txt"
+      ontologies: []
+output:
+  counts:
+    - - meta:
+          type: map
+          description: Groovy Map containing sample information
+      - "*_counts.txt":
+          type: file
+          description: |
+            Tab-separated file of reference sequence ID and read count for each
+            taxon detected in the MALT alignment.
+          pattern: "*_counts.txt"
+          ontologies: []
+authors:
+  - "@mahesh-panchal"
+maintainers:
+  - "@mahesh-panchal"

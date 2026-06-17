@@ -1,0 +1,104 @@
+name: breadthofcoverage
+description: |
+  Computes breadth of coverage statistics for a target organism from MALT
+  alignment output. Uses samtools to sort and index the alignment, computes
+  per-region coverage with samtools coverage, and extracts the reference FASTA
+  sequence for the target taxon using samtools faidx.
+keywords:
+  - breadth of coverage
+  - samtools
+  - ancient DNA
+  - authentication
+  - metagenomics
+tools:
+  - samtools:
+      description: Utilities for the Sequence Alignment/Map (SAM) format
+      homepage: https://www.htslib.org/
+      documentation: https://www.htslib.org/doc/samtools.html
+      licence: ["MIT"]
+      identifier: "biotools:samtools"
+input:
+  - - meta:
+        type: map
+        description: |
+          Groovy Map containing sample and taxon information,
+          e.g. [ id:'sample1', taxid:'1234' ]
+    - sam:
+        type: file
+        description: Gzip-compressed MALT SAM alignment file
+        pattern: "*.sam.gz"
+        ontologies: []
+    - malt_extract_results:
+        type: directory
+        description: MaltExtract results directory containing additionalNodeEntries.txt
+        pattern: "*/"
+        ontologies: []
+  - fasta:
+      type: file
+      description: Reference FASTA file used to build the MALT database
+      pattern: "*.{fna,fa,fasta}"
+      ontologies: []
+  - fai:
+      type: file
+      description: FASTA index for the reference FASTA
+      pattern: "*.fai"
+      ontologies: []
+output:
+  name_list:
+    - - meta:
+          type: map
+          description: Groovy Map containing sample and taxon information
+      - name_list.txt:
+          type: file
+          description: List of reference sequence IDs for the target taxon
+          pattern: "name_list.txt"
+          ontologies: []
+  name_list_regions:
+    - - meta:
+          type: map
+          description: Groovy Map containing sample and taxon information
+      - name_list.txt.regions:
+          type: file
+          description: samtools coverage region output for the target taxon sequences
+          pattern: "name_list.txt.regions"
+          ontologies: []
+  sorted_bam:
+    - - meta:
+          type: map
+          description: Groovy Map containing sample and taxon information
+      - "*.sorted.bam":
+          type: file
+          description: Coordinate-sorted BAM of the MALT alignment
+          pattern: "*.sorted.bam"
+          ontologies: []
+  sorted_bai:
+    - - meta:
+          type: map
+          description: Groovy Map containing sample and taxon information
+      - "*.sorted.bam.bai":
+          type: file
+          description: BAM index for the sorted alignment
+          pattern: "*.sorted.bam.bai"
+          ontologies: []
+  breadth_of_coverage:
+    - - meta:
+          type: map
+          description: Groovy Map containing sample and taxon information
+      - "*.breadth_of_coverage":
+          type: file
+          description: Per-sequence breadth of coverage statistics
+          pattern: "*.breadth_of_coverage"
+          ontologies: []
+  ref_fasta:
+    - - meta:
+          type: map
+          description: Groovy Map containing sample and taxon information
+      - "*.fasta":
+          type: file
+          description: Extracted reference FASTA sequences for the target taxon
+          pattern: "*.fasta"
+          ontologies: []
+authors:
+  - "@mahesh-panchal"
+maintainers:
+  - "@mahesh-panchal"

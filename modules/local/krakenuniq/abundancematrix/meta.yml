@@ -1,0 +1,79 @@
+name: krakenuniq_abundancematrix
+description: |
+  Generates an abundance matrix and heatmaps from KrakenUniq filtered reports
+  across all samples. Produces a species-by-sample count matrix, a list of
+  species names and taxon IDs, and two PDF heatmaps (by read count and by
+  unique k-mer count) using R and the pheatmap package.
+keywords:
+  - krakenuniq
+  - abundance matrix
+  - heatmap
+  - metagenomics
+  - taxonomy
+  - visualisation
+tools:
+  - r-base:
+      description: The R statistical computing environment
+      homepage: https://www.r-project.org/
+      documentation: https://www.r-project.org/
+      licence: ["GPL-2.0-or-later"]
+      identifier: ""
+  - r-pheatmap:
+      description: R package for pretty heatmaps
+      homepage: https://cran.r-project.org/package=pheatmap
+      documentation: https://cran.r-project.org/package=pheatmap
+      licence: ["GPL-2.0-or-later"]
+      identifier: ""
+input:
+  - reports:
+      type: file
+      description: Collection of filtered KrakenUniq report files from all samples
+      pattern: "*.filtered"
+      ontologies: []
+  - n_unique_kmers:
+      type: integer
+      description: Minimum unique k-mer threshold used to label the heatmap axis
+  - n_tax_reads:
+      type: integer
+      description: Minimum read count threshold used to label the heatmap axis
+output:
+  log:
+    - "*.log":
+        type: file
+        description: Log output from R script
+        pattern: "*.log"
+        ontologies: []
+  heatmap_pdf_reads:
+    - "*.heatmap_reads.pdf":
+        type: file
+        description: Heatmap PDF coloured by read count across all samples
+        pattern: "*.heatmap_reads.pdf"
+        ontologies: []
+  heatmap_pdf_kmers:
+    - "*.heatmap_kmers.pdf":
+        type: file
+        description: Heatmap PDF coloured by unique k-mer count across all samples
+        pattern: "*.heatmap_kmers.pdf"
+        ontologies: []
+  abundance_matrix:
+    - "*.abundance_matrix.txt":
+        type: file
+        description: Species-by-sample abundance matrix in tab-separated format
+        pattern: "*.abundance_matrix.txt"
+        ontologies: []
+  species_names_list:
+    - "*.species_names.txt":
+        type: file
+        description: Ordered list of species names corresponding to matrix rows
+        pattern: "*.species_names.txt"
+        ontologies: []
+  species_taxid_list:
+    - "*.species_taxids.txt":
+        type: file
+        description: Ordered list of taxon IDs corresponding to matrix rows
+        pattern: "*.species_taxids.txt"
+        ontologies: []
+authors:
+  - "@mahesh-panchal"
+maintainers:
+  - "@mahesh-panchal"

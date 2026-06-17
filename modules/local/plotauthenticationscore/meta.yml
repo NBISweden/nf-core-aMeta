@@ -1,0 +1,51 @@
+name: plotauthenticationscore
+description: |
+  Aggregates authentication score files from all sample-taxon combinations and
+  produces a summary heatmap PDF using plot_score.R. Provides a pipeline-level
+  overview of ancient DNA authenticity across all analysed pathogens and samples.
+keywords:
+  - authentication
+  - heatmap
+  - summary
+  - ancient DNA
+  - visualisation
+tools:
+  - r-base:
+      description: The R statistical computing environment
+      homepage: https://www.r-project.org/
+      documentation: https://www.r-project.org/
+      licence: ["GPL-2.0-or-later"]
+      identifier: ""
+  - r-pheatmap:
+      description: R package for pretty heatmaps
+      homepage: https://cran.r-project.org/package=pheatmap
+      documentation: https://cran.r-project.org/package=pheatmap
+      licence: ["GPL-2.0-or-later"]
+      identifier: ""
+input:
+  - scores:
+      type: file
+      description: |
+        Collection of authentication score files from AUTHENTICATIONSCORE
+        (one per sample-taxon combination), arity 1..*
+      pattern: "*.authentication_scores.txt"
+      ontologies: []
+output:
+  pdf:
+    - "*.pdf":
+        type: file
+        description: |
+          Summary heatmap PDF of authentication scores across all samples
+          and taxa
+        pattern: "*.pdf"
+        ontologies: []
+  score_table:
+    - "*.txt":
+        type: file
+        description: Combined authentication score table in tab-separated format
+        pattern: "*.txt"
+        ontologies: []
+authors:
+  - "@mahesh-panchal"
+maintainers:
+  - "@mahesh-panchal"
