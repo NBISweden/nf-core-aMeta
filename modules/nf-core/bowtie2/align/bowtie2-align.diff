@@ -1,0 +1,22 @@
+Changes in component 'nf-core/bowtie2/align'
+'modules/nf-core/bowtie2/align/environment.yml' is unchanged
+'modules/nf-core/bowtie2/align/meta.yml' is unchanged
+Changes in 'bowtie2/align/main.nf':
+--- modules/nf-core/bowtie2/align/main.nf
++++ modules/nf-core/bowtie2/align/main.nf
+@@ -65,6 +65,7 @@
+         $rg \\
+         $args \\
+         2>| >(tee ${prefix}.bowtie2.log >&2) \\
++        | awk '/^@/{ if (!seen[\$2]++) print; next }{ print }' \\
+         | samtools $samtools_command $args2 --threads $task.cpus ${reference} -o ${prefix}.${extension} -
+ 
+     if [ -f ${prefix}.unmapped.fastq.1.gz ]; then
+
+'modules/nf-core/bowtie2/align/tests/main.nf.test.snap' is unchanged
+'modules/nf-core/bowtie2/align/tests/large_index.config' is unchanged
+'modules/nf-core/bowtie2/align/tests/sam2.config' is unchanged
+'modules/nf-core/bowtie2/align/tests/main.nf.test' is unchanged
+'modules/nf-core/bowtie2/align/tests/sam.config' is unchanged
+'modules/nf-core/bowtie2/align/tests/cram_crai.config' is unchanged
+************************************************************

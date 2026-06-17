@@ -65,6 +65,7 @@ process BOWTIE2_ALIGN {
         $rg \\
         $args \\
         2>| >(tee ${prefix}.bowtie2.log >&2) \\
+        | awk '/^@/{ if (!seen[\$2]++) print; next }{ print }' \\
         | samtools $samtools_command $args2 --threads $task.cpus ${reference} -o ${prefix}.${extension} -
 
     if [ -f ${prefix}.unmapped.fastq.1.gz ]; then
