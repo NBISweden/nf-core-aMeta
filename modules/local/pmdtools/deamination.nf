@@ -31,4 +31,13 @@ process PMDTOOLS_DEAMINATION {
     mv PMD_plot.frag.pdf ${prefix}.PMD_plot.frag.pdf
     mv plotPMD.Rout ${prefix}.plotPMD.Rout
     """
+
+    stub:
+    def prefix = task.ext.prefix ?: "${meta.id}"
+    """
+    touch ${prefix}.PMD_temp.txt
+    touch ${prefix}.PMD_plot.frag.pdf
+    touch ${prefix}.plotPMD.Rout
+    touch .RData
+    """
 }

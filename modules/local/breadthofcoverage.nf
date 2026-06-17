@@ -49,4 +49,14 @@ process BREADTHOFCOVERAGE {
     samtools faidx $fasta -r name_list.txt.regions -o \$REF_ID.fasta
     rm ${meta.taxid}.sam
     """
+
+    stub:
+    """
+    touch name_list.txt
+    touch name_list.txt.regions
+    touch ${meta.taxid}.sorted.bam
+    touch ${meta.taxid}.sorted.bam.bai
+    touch ${meta.taxid}.breadth_of_coverage
+    touch ${meta.taxid}.fasta
+    """
 }

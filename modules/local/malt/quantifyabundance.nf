@@ -23,4 +23,10 @@ process MALT_QUANTIFYABUNDANCE {
     """
     malt_quantify_abundance.py $sam $unique_taxids > ${prefix}.sam_counts.txt
     """
+
+    stub:
+    def prefix = task.ext.prefix ?: "${meta.id}"
+    """
+    touch ${prefix}.sam_counts.txt
+    """
 }

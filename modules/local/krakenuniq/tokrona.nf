@@ -28,4 +28,11 @@ process KRAKENUNIQ_TOKRONA {
 
     cat ${sequences.name}_kmers1000.txt | cut -f 2,3 > ${sequences.name}_kmers1000.krona
     """
+
+    stub:
+    """
+    touch ${sequences.name}_taxIDs_kmers1000.txt
+    touch ${sequences.name}_kmers1000.txt
+    touch ${sequences.name}_kmers1000.krona
+    """
 }

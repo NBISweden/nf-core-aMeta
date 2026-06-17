@@ -23,4 +23,10 @@ process AUTHENTICATIONPLOTS {
     ID=\$( find -L MaltExtract_output -wholename "*/default/editDistance/*_editDistance.txt" -exec basename {} "_editDistance.txt" \\; )
     authentic.R ${meta.taxid} "\$ID" .
     """
+
+    stub:
+    """
+    touch ${meta.taxid}.pdf
+    touch ${meta.taxid}.png
+    """
 }

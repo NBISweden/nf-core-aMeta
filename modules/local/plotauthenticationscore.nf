@@ -27,4 +27,10 @@ process PLOTAUTHENTICATIONSCORE {
 
     plot_score.R scores .
     """
+
+    stub:
+    """
+    touch authentication_score.pdf
+    touch authentication_score.txt
+    """
 }

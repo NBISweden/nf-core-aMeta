@@ -38,4 +38,14 @@ process KRAKENUNIQ_FILTER {
     cut -f7 ${report}.pathogens | tail -n +2 > ${prefix}.taxID.pathogens
     cut -f7 ${report}.filtered | tail -n +2 > ${prefix}.taxID.species
     """
+
+    stub:
+    def prefix = task.ext.prefix ?: "${meta.id}"
+    """
+    touch ${report}.pathogens
+    touch ${report}.filtered
+    touch ${prefix}.taxID.pathogens
+    touch ${prefix}.taxID.species
+    touch ${prefix}.krakenuniq_filter.log
+    """
 }

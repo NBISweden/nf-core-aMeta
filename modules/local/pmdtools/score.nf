@@ -24,4 +24,10 @@ process PMDTOOLS_SCORE {
     (samtools view -h $bam || true) \\
         | pmdtools --printDS > ${prefix}.PMDscores.txt
     """
+
+    stub:
+    def prefix = task.ext.prefix ?: "${meta.id}"
+    """
+    touch ${prefix}.PMDscores.txt
+    """
 }

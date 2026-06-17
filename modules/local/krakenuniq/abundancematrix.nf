@@ -38,4 +38,15 @@ process KRAKENUNIQ_ABUNDANCEMATRIX {
         . \\
         |& tee -a ${prefix}.abundance_matrix.log
     """
+
+    stub:
+    def prefix = task.ext.prefix ?: "krakenuniq"
+    """
+    touch ${prefix}.abundance_matrix.log
+    touch krakenuniq_absolute_abundance_heatmap.pdf
+    touch krakenuniq_abundance_matrix.txt
+    touch krakenuniq_normalized_abundance_heatmap.pdf
+    touch unique_species_names_list.txt
+    touch unique_species_taxid_list.txt
+    """
 }

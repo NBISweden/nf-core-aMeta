@@ -22,4 +22,9 @@ process MALT_ABUNDANCEMATRIXSAM {
     """
     malt_abundance_matrix.R counts/ ./
     """
+
+    stub:
+    """
+    touch malt_abundance_matrix_sam.txt
+    """
 }

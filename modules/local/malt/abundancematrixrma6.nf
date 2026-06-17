@@ -22,4 +22,9 @@ process MALT_ABUNDANCEMATRIXRMA6 {
     rma-tabuliser -d rma6s/ $args
     mv rma6s/count_table.tsv malt_abundance_matrix_rma6.txt
     """
+
+    stub:
+    """
+    touch malt_abundance_matrix_rma6.txt
+    """
 }

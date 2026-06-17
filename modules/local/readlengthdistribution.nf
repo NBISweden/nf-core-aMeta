@@ -27,4 +27,10 @@ process READLENGTHDISTRIBUTION {
         $bam \\
         | awk '{ print length(\$10) }' > ${prefix}.read_length.txt
     """
+
+    stub:
+    def prefix = task.ext.prefix ?: "${meta.id}"
+    """
+    touch ${prefix}.read_length.txt
+    """
 }

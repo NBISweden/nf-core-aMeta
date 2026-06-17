@@ -23,4 +23,9 @@ process MAKENODELIST {
     """
     awk -F'\\t' '\$1 == "${meta.taxid}" { print \$3 }' ${taxdb_dir}/taxDB > node_list.txt
     """
+
+    stub:
+    """
+    touch node_list.txt
+    """
 }

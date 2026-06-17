@@ -28,4 +28,10 @@ process AUTHENTICATIONSCORE {
         $pmd_scores
     mv authentication_scores.txt ${prefix}.authentication_scores.txt
     """
+
+    stub:
+    def prefix = task.ext.prefix ?: "${meta.id}"
+    """
+    touch ${prefix}.authentication_scores.txt
+    """
 }

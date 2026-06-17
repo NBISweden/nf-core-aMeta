@@ -34,4 +34,12 @@ process MALT_PREPAREDB {
         project.headers \\
         > library.project.fna
     """
+
+    stub:
+    """
+    touch seqid2taxid.project.map
+    touch seqids.project
+    touch project.headers
+    touch library.project.fna
+    """
 }

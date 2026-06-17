@@ -32,4 +32,12 @@ process POSTPROCESSINGAMPS {
         || { echo 'postprocessing failed for ${meta.id}_${meta.taxid}' \\
         > $malt_extract/analysis.RData; }
     """
+
+    stub:
+    """
+    mkdir -p ${malt_extract}/pdf_candidate_profiles
+    touch ${malt_extract}/analysis.RData
+    touch ${malt_extract}/heatmap_overview_Wevid.pdf
+    touch ${malt_extract}/heatmap_overview_Wevid.tsv
+    """
 }

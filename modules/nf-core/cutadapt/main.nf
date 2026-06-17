@@ -34,11 +34,11 @@ process CUTADAPT {
     stub:
     def prefix = task.ext.prefix ?: "${meta.id}"
     if (meta.single_end) {
-        output_command = "echo '' | gzip > ${prefix}.trim.fastq.gz ;"
+        output_command = "echo '' | gzip > ${prefix}.trimmed.fastq.gz ;"
     }
     else {
-        output_command  = "echo '' | gzip > ${prefix}_1.trim.fastq.gz ;"
-        output_command += "echo '' | gzip > ${prefix}_2.trim.fastq.gz ;"
+        output_command  = "echo '' | gzip > ${prefix}_1.trimmed.fastq.gz ;"
+        output_command += "echo '' | gzip > ${prefix}_2.trimmed.fastq.gz ;"
     }
     """
     ${output_command}
