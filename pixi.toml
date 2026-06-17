@@ -9,7 +9,8 @@ version = "0.1.0"
 # Development
 clean-all = "git clean -e .pixi -fdx"
 clean-work = "nextflow clean -f -before last && find work -type d -empty -delete"
-test = "nextflow run main.nf -resume -profile test,podman --outdir results --db_cache 'work/database_cache'"
+test = "nextflow run main.nf -resume -profile test,docker --outdir results --db_cache 'work/database_cache'"
+stub = "nextflow run main.nf -stub -resume -profile test,docker --outdir results_stub --db_cache 'work/database_cache'"
 # Nextflow
 [tasks.lint]
 cmd = """
