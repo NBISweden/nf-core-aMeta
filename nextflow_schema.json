@@ -91,6 +91,159 @@
                 }
             }
         },
+        "database_options": {
+            "title": "Reference databases",
+            "type": "object",
+            "fa_icon": "fas fa-database",
+            "description": "Paths to reference databases and mapping files required by the pipeline.",
+            "properties": {
+                "bowtie2_db": {
+                    "type": "string",
+                    "format": "file-path",
+                    "description": "Path to the Bowtie2 reference FASTA or index prefix used for ancient pathogen alignment.",
+                    "fa_icon": "fas fa-file"
+                },
+                "bowtie2_seqid2taxid_db": {
+                    "type": "string",
+                    "format": "file-path",
+                    "exists": true,
+                    "description": "Tab-separated file mapping Bowtie2 sequence IDs to NCBI taxonomy IDs.",
+                    "fa_icon": "fas fa-file-alt"
+                },
+                "krakenuniq_db": {
+                    "type": "string",
+                    "format": "directory-path",
+                    "exists": true,
+                    "description": "Path to the KrakenUniq database directory.",
+                    "fa_icon": "fas fa-folder"
+                },
+                "pathogenomes_found": {
+                    "type": "string",
+                    "format": "file-path",
+                    "exists": true,
+                    "description": "Tab-separated file listing pathogen reference genomes present in the database (pathogenomesFound.tab).",
+                    "fa_icon": "fas fa-file-alt"
+                },
+                "malt_seqid2taxid_db": {
+                    "type": "string",
+                    "format": "file-path",
+                    "exists": true,
+                    "description": "Tab-separated file mapping sequence IDs to NCBI taxonomy IDs for MALT database building.",
+                    "fa_icon": "fas fa-file-alt"
+                },
+                "malt_nt_fasta": {
+                    "type": "string",
+                    "format": "file-path",
+                    "exists": true,
+                    "description": "FASTA file of NT sequences used to build the MALT reference database.",
+                    "fa_icon": "fas fa-file"
+                },
+                "malt_accession2taxid": {
+                    "type": "string",
+                    "format": "file-path",
+                    "exists": true,
+                    "description": "Accession-to-taxonomy-ID mapping file (e.g. nucl_gb.accession2taxid) for MALT.",
+                    "fa_icon": "fas fa-file-alt"
+                },
+                "ncbi_dir": {
+                    "type": "string",
+                    "default": "ncbi",
+                    "description": "Directory for NCBI taxonomy files used by MaltExtract and Krona. Created automatically if absent.",
+                    "fa_icon": "fas fa-folder"
+                },
+                "db_cache": {
+                    "type": "string",
+                    "default": "database_cache",
+                    "description": "Directory used to cache built databases (Bowtie2 index, MALT DB) between runs.",
+                    "fa_icon": "fas fa-folder"
+                },
+                "krona_taxonomy_file": {
+                    "type": "string",
+                    "format": "file-path",
+                    "exists": true,
+                    "description": "Pre-built Krona taxonomy tab file. If omitted, Krona downloads its taxonomy at runtime.",
+                    "fa_icon": "fas fa-file"
+                }
+            }
+        },
+        "filtering_options": {
+            "title": "Filtering and abundance options",
+            "type": "object",
+            "fa_icon": "fas fa-filter",
+            "description": "Thresholds for filtering KrakenUniq taxonomic classifications.",
+            "properties": {
+                "n_unique_kmers": {
+                    "type": "integer",
+                    "default": 1000,
+                    "description": "Minimum number of unique k-mers required to retain a taxon from KrakenUniq.",
+                    "fa_icon": "fas fa-hashtag"
+                },
+                "n_tax_reads": {
+                    "type": "integer",
+                    "default": 200,
+                    "description": "Minimum number of reads assigned to a taxon required to retain it from KrakenUniq.",
+                    "fa_icon": "fas fa-hashtag"
+                }
+            }
+        },
+        "analysis_options": {
+            "title": "Optional analysis toggles",
+            "type": "object",
+            "fa_icon": "fas fa-toggle-on",
+            "description": "Enable or disable optional analysis stages.",
+            "properties": {
+                "run_mapdamage": {
+                    "type": "boolean",
+                    "default": true,
+                    "description": "Run MapDamage2 post-alignment damage analysis.",
+                    "fa_icon": "fas fa-dna"
+                },
+                "run_authentication": {
+                    "type": "boolean",
+                    "default": true,
+                    "description": "Run full authentication pipeline (MALT, breadth of coverage, PMD scores, authentication scoring).",
+                    "fa_icon": "fas fa-check-double"
+                },
+                "run_malt": {
+                    "type": "boolean",
+                    "default": true,
+                    "description": "Run MALT alignment and abundance analysis.",
+                    "fa_icon": "fas fa-align-left"
+                },
+                "run_krona": {
+                    "type": "boolean",
+                    "default": true,
+                    "description": "Generate Krona interactive taxonomy plots from KrakenUniq output.",
+                    "fa_icon": "fas fa-chart-pie"
+                }
+            }
+        },
+        "cutadapt_options": {
+            "title": "Cutadapt adapter configuration",
+            "type": "object",
+            "fa_icon": "fas fa-cut",
+            "description": "Configure adapter sequences for Cutadapt trimming.",
+            "properties": {
+                "adapters_illumina": {
+                    "type": "string",
+                    "default": "AGATCGGAAGAG",
+                    "description": "Illumina TruSeq adapter sequence. Set to empty string to disable.",
+                    "fa_icon": "fas fa-scissors"
+                },
+                "adapters_nextera": {
+                    "type": "string",
+                    "default": "",
+                    "description": "Nextera adapter sequence. Set to CTGTCTCTTATA to enable Nextera adapter trimming.",
+                    "fa_icon": "fas fa-scissors"
+                },
+                "adapters_custom": {
+                    "type": "string",
+                    "default": "",
+                    "description": "Additional adapter sequences as a comma-separated list.",
+                    "fa_icon": "fas fa-scissors"
+                }
+            }
+        },
         "generic_options": {
             "title": "Generic options",
             "type": "object",
@@ -197,6 +350,18 @@
     "allOf": [
         {
             "$ref": "#/$defs/input_output_options"
+        },
+        {
+            "$ref": "#/$defs/database_options"
+        },
+        {
+            "$ref": "#/$defs/filtering_options"
+        },
+        {
+            "$ref": "#/$defs/analysis_options"
+        },
+        {
+            "$ref": "#/$defs/cutadapt_options"
         },
         {
             "$ref": "#/$defs/institutional_config_options"
