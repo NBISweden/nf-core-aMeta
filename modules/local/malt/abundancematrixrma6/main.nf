@@ -1,10 +1,10 @@
 process MALT_ABUNDANCEMATRIXRMA6 {
     label 'process_single'
 
-    conda "bioconda::megan:6.24.20"
+    conda "bioconda::megan:6.24.20 conda-forge::gawk=5.4.0"
     container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
-        'https://depot.galaxyproject.org/singularity/megan:6.24.20--h9ee0642_0':
-        'biocontainers/megan:6.24.20--h9ee0642_0' }"
+        'https://community-cr-prod.seqera.io/docker/registry/v2/blobs/sha256/95/953a61c6c2c46e8aa8619a2ab1f1a2c44ef5f8bbe6607795d8fbc930d80d2cde/data':
+        'community.wave.seqera.io/library/megan_gawk:0908b51d47d26819' }"
 
     input:
     path rma6, stageAs: 'rma6s/*'
