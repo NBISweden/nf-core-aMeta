@@ -12,6 +12,7 @@ process MALT_ABUNDANCEMATRIXRMA6 {
     output:
     path "malt_abundance_matrix_rma6.txt", emit: abundance_matrix_rma6
     tuple val("${task.process}"), val('rma-tabuliser'), eval("rma-tabuliser -v"), topic: versions, emit: versions_rma_tabuliser
+    tuple val("${task.process}"), val('megan'), eval("rma2info -h |& sed '/version/!d; s/.*version //; s/, .*//'"), topic: versions, emit: versions_megan
 
     when:
     task.ext.when == null || task.ext.when
