@@ -30,7 +30,7 @@ process BREADTHOFCOVERAGE {
     REF_ID_FILE=\$( find -L malt_extract_results -wholename "*/default/readDist/*.rma6_additionalNodeEntries.txt" )
     if [ -f "\$REF_ID_FILE" ]; then
         REF_ID=\$( awk -F';_' 'NR==2 { print \$2 }' \$REF_ID_FILE )
-        if [ -z \$REF_ID ]; then
+        if [ -z "\$REF_ID" ]; then
             >&2 echo "Failed to extract ref_id from \$REF_ID_FILE; returning taxid ${meta.taxid}"
             REF_ID=${meta.taxid}
         fi
