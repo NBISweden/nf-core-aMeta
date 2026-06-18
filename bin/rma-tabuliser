@@ -1,4 +1,5 @@
 #! /usr/bin/env bash
+set -eo pipefail
 
 ## Bash script to generate count/taxon/OTU tables from RMA6 files
 
