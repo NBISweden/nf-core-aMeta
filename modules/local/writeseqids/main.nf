@@ -1,4 +1,5 @@
 process WRITESEQIDS {
+    executor 'local'
     tag "$meta.id"
     label 'process_single'
 
