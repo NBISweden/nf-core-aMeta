@@ -141,16 +141,40 @@ workflow AMETA {
         }
     KRAKENUNIQ_BUILD ( ch_kdb.build, false ) // custom fasta, keep_intermediates
     ch_krakenuniq_db = KRAKENUNIQ_BUILD.out.db.mix(ch_kdb.as_is).collect{ _meta, db -> db }
-    KRAKENUNIQ_PRELOADEDKRAKENUNIQ( // TODO: This should probably take all inputs at once.
-        CUTADAPT.out.reads.map{ meta, fq -> tuple(meta, fq, [ meta.id ] )}, // [ meta, fastqs, prefixes ]
+
+    // Batch all samples of the same datatype (single/paired-end) into one process instance,
+    // so the (very large) database is preloaded once per datatype rather than once per sample.
+    ch_krakenuniq_batch = CUTADAPT.out.reads
+        .map { meta, reads -> tuple(meta.single_end, meta, reads instanceof List ? reads : [reads]) }
+        .groupTuple(by: 0) // [ single_end, [meta, meta, ...], [reads, reads, ...] ]
+        .map { single_end, metas, reads -> tuple(single_end, metas, reads.flatten()) }
+    ch_krakenuniq_meta = ch_krakenuniq_batch.flatMap { _single_end, metas, _reads -> metas.collect{ meta -> [ meta.id, meta ] } }
+    KRAKENUNIQ_PRELOADEDKRAKENUNIQ(
+        ch_krakenuniq_batch.map { single_end, metas, reads ->
+            tuple(
+                [ id: single_end ? 'krakenuniq_single_end' : 'krakenuniq_paired_end', single_end: single_end ],
+                reads,
+                metas.collect{ it.id }
+            )
+        }, // [ meta, fastqs, prefixes ]
         'fastq',                          // fastq/fasta
         ch_krakenuniq_db,                 // db
         true,                             // save_output_reads
         true,                             // report_file
         true                              // save_output
     )
+    // Re-key the batched outputs back to their originating per-sample meta via the filename prefix
+    ch_krakenuniq_report = KRAKENUNIQ_PRELOADEDKRAKENUNIQ.out.report
+        .flatMap { _meta, reports -> (reports instanceof List ? reports : [reports]).collect{ report -> [ report.name.replace('.krakenuniq.report.txt', ''), report ] } }
+        .join(ch_krakenuniq_meta)
+        .map { _id, report, meta -> tuple(meta, report) }
+    ch_krakenuniq_classified_assignment = KRAKENUNIQ_PRELOADEDKRAKENUNIQ.out.classified_assignment
+        .flatMap { _meta, files -> (files instanceof List ? files : [files]).collect{ f -> [ f.name.replace('.krakenuniq.classified.txt', ''), f ] } }
+        .join(ch_krakenuniq_meta)
+        .map { _id, f, meta -> tuple(meta, f) }
+
     KRAKENUNIQ_FILTER(
-        KRAKENUNIQ_PRELOADEDKRAKENUNIQ.out.report,
+        ch_krakenuniq_report,
         params.n_unique_kmers,
         params.n_tax_reads,
         file( params.pathogenomes_found, checkIfExists: true )
@@ -159,7 +183,7 @@ workflow AMETA {
         .ifEmpty { log.warn "[NBISweden/ameta] No microbes passed the KrakenUniq filter thresholds (n_unique_kmers=${params.n_unique_kmers}, n_tax_reads=${params.n_tax_reads}). Downstream analyses will be skipped." }
     if (params.run_krona.toBoolean()) {
         KRAKENUNIQ_TOKRONA(
-            KRAKENUNIQ_FILTER.out.filtered.join(KRAKENUNIQ_PRELOADEDKRAKENUNIQ.out.classified_assignment)
+            KRAKENUNIQ_FILTER.out.filtered.join(ch_krakenuniq_classified_assignment)
         )
         KRONA_KTUPDATETAXONOMY()
         KRONA_KTIMPORTTAXONOMY(
