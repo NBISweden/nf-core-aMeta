@@ -15,7 +15,7 @@ process MALTEXTRACT {
     output:
     tuple val(meta), path("results")      , emit: results
     tuple val(meta), path("ref_id.txt")   , emit: ref_id, optional: true
-    path "versions.yml"                   , emit: versions
+    tuple val("${task.process}"), val('maltextract'), eval('MaltExtract --help | head -n 2 | tail -n 1 | sed \'s/MaltExtract version//\''), emit: versions_maltextract, topic: versions
 
     when:
     task.ext.when == null || task.ext.when
@@ -40,10 +40,10 @@ process MALTEXTRACT {
             echo "\$REF_ID" > ref_id.txt
         fi
     fi
+    """
 
-    cat <<-END_VERSIONS > versions.yml
-    "${task.process}":
-        maltextract: \$(MaltExtract --help | head -n 2 | tail -n 1 | sed 's/MaltExtract version//')
-    END_VERSIONS
+    stub:
+    """
+    mkdir -p results
     """
 }

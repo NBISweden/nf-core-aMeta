@@ -3,10 +3,11 @@ Changes in component 'nf-core/maltextract'
 Changes in 'maltextract/meta.yml':
 --- modules/nf-core/maltextract/meta.yml
 +++ modules/nf-core/maltextract/meta.yml
-@@ -54,6 +54,19 @@
+@@ -55,7 +55,19 @@
            type: directory
            description: Directory containing MaltExtract text results files
            pattern: "results/"
+-
 +  ref_id:
 +    - - meta:
 +          type: map
@@ -20,9 +21,9 @@ Changes in 'maltextract/meta.yml':
 +            report, present only when a valid ref ID (distinct from the taxid) was found.
 +          pattern: "ref_id.txt"
 +          ontologies: []
-   versions:
-     - versions.yml:
-         type: file
+   versions_maltextract:
+     - - ${task.process}:
+           type: string
 
 Changes in 'maltextract/main.nf':
 --- modules/nf-core/maltextract/main.nf
@@ -32,13 +33,14 @@ Changes in 'maltextract/main.nf':
      output:
      tuple val(meta), path("results")      , emit: results
 +    tuple val(meta), path("ref_id.txt")   , emit: ref_id, optional: true
-     path "versions.yml"                   , emit: versions
+     tuple val("${task.process}"), val('maltextract'), eval('MaltExtract --help | head -n 2 | tail -n 1 | sed \'s/MaltExtract version//\''), emit: versions_maltextract, topic: versions
  
      when:
-@@ -31,6 +32,15 @@
+@@ -30,6 +31,15 @@
+         -r $ncbi_dir \\
          -o results/ \\
          $args
- 
++
 +    # Equivalent to get_ref_id() in aMeta/workflow/rules/common.smk
 +    REF_ID_FILE=\$( find -L results -wholename "*/default/readDist/*.rma6_additionalNodeEntries.txt" )
 +    if [ -f "\$REF_ID_FILE" ]; then
@@ -47,10 +49,9 @@ Changes in 'maltextract/main.nf':
 +            echo "\$REF_ID" > ref_id.txt
 +        fi
 +    fi
-+
-     cat <<-END_VERSIONS > versions.yml
-     "${task.process}":
-         maltextract: \$(MaltExtract --help | head -n 2 | tail -n 1 | sed 's/MaltExtract version//')
+     """
+ 
+     stub:
 
 'modules/nf-core/maltextract/tests/main.nf.test.snap' is unchanged
 'modules/nf-core/maltextract/tests/main.nf.test' is unchanged
