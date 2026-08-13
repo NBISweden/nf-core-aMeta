@@ -159,7 +159,7 @@ workflow AMETA {
         }, // [ meta, fastqs, prefixes ]
         'fastq',                          // fastq/fasta
         ch_krakenuniq_db,                 // db
-        true,                             // save_output_reads
+        false,                            // save_output_reads
         true,                             // report_file
         true                              // save_output
     )
