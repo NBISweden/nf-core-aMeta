@@ -234,14 +234,14 @@ workflow AMETA {
             file(params.malt_nt_fasta, checkIfExists: true)
         )
         MALT_BUILD (
-            MALT_PREPAREDB.out.library,
+            MALT_PREPAREDB.out.library.map { lib -> [ [ id: 'malt_index' ], lib ] },
             [],
             file(params.malt_accession2taxid, checkIfExists: true),
             "a2t" // --acc2taxa - deprecated flag
         )
         MALT_RUN (
             CUTADAPT.out.reads,
-            MALT_BUILD.out.index.collect()
+            MALT_BUILD.out.index.collect { _meta, index -> [ [ id: 'malt_index' ], index ] }
         )
         MALT_QUANTIFYABUNDANCE (
             MALT_RUN.out.alignments,
