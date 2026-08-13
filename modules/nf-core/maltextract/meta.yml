@@ -54,6 +54,19 @@ output:
           type: directory
           description: Directory containing MaltExtract text results files
           pattern: "results/"
+  ref_id:
+    - - meta:
+          type: map
+          description: |
+            Groovy Map containing sample information
+            e.g. [ id:'test', single_end:false ]
+      - ref_id.txt:
+          type: file
+          description: |
+            Reference sequence ID extracted from the readDist additionalNodeEntries
+            report, present only when a valid ref ID (distinct from the taxid) was found.
+          pattern: "ref_id.txt"
+          ontologies: []
   versions:
     - versions.yml:
         type: file

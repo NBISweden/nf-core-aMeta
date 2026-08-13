@@ -14,6 +14,7 @@ process MALTEXTRACT {
 
     output:
     tuple val(meta), path("results")      , emit: results
+    tuple val(meta), path("ref_id.txt")   , emit: ref_id, optional: true
     path "versions.yml"                   , emit: versions
 
     when:
@@ -30,6 +31,15 @@ process MALTEXTRACT {
         -r $ncbi_dir \\
         -o results/ \\
         $args
+
+    # Equivalent to get_ref_id() in aMeta/workflow/rules/common.smk
+    REF_ID_FILE=\$( find -L results -wholename "*/default/readDist/*.rma6_additionalNodeEntries.txt" )
+    if [ -f "\$REF_ID_FILE" ]; then
+        REF_ID=\$( awk -F';_' 'NR==2 { print \$2 }' "\$REF_ID_FILE" )
+        if [ -n "\$REF_ID" ] && [ "\$REF_ID" != "${meta.taxid}" ]; then
+            echo "\$REF_ID" > ref_id.txt
+        fi
+    fi
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":

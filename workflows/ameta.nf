@@ -282,10 +282,13 @@ workflow AMETA {
             // unless offline in which case a local path to `ncbi` dir should be supplied with the ncbi.tre and ncbi.map inside
             // Download from https://github.com/husonlab/megan-ce/tree/master/src/megan/resources/files
         )
-        POSTPROCESSINGAMPS( MAKENODELIST.out.node_list.join(MALTEXTRACT.out.results) )
+        def ch_maltextract_valid = MALTEXTRACT.out.results
+            .join( MALTEXTRACT.out.ref_id )
+            .map { meta, results, ref_id -> [ meta, results ] }
+        POSTPROCESSINGAMPS( MAKENODELIST.out.node_list.join(ch_maltextract_valid) )
         def ch_alignments_per_taxid = ch_malt_alignments
             .combine(
-                MALTEXTRACT.out.results
+                ch_maltextract_valid
                     .map{ meta, results -> [ meta.subMap(meta.keySet() - 'taxid'), meta.taxid, results ] },
                 by: 0
             )
@@ -309,11 +312,11 @@ workflow AMETA {
                 .join( PMDTOOLS_SCORE.out.pmd_scores )
                 .join( BREADTHOFCOVERAGE.out.breadth_of_coverage )
                 .join( BREADTHOFCOVERAGE.out.name_list )
-                .join( MALTEXTRACT.out.results )
+                .join( ch_maltextract_valid )
         )
         def ch_authentication_score = ch_malt_rma6
             .combine(
-                MALTEXTRACT.out.results
+                ch_maltextract_valid
                     .join( BREADTHOFCOVERAGE.out.name_list )
                     .join( BREADTHOFCOVERAGE.out.breadth_of_coverage )
                     .join( READLENGTHDISTRIBUTION.out.read_length )
