@@ -1,10 +1,10 @@
 process MALT_PREPAREDB {
     label 'process_single'
 
-    conda "bioconda::seqtk=1.4"
-    container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
-        'https://depot.galaxyproject.org/singularity/seqtk:1.4--he4a0461_1' :
-        'biocontainers/seqtk:1.4--he4a0461_1' }"
+    conda "bioconda::htslib=1.23.1 bioconda::samtools=1.23.1"
+    container "${ workflow.containerEngine in ['singularity', 'apptainer'] && !task.ext.singularity_pull_docker_container ?
+        'https://community-cr-prod.seqera.io/docker/registry/v2/blobs/sha256/8c/8c5d2818c8b9f58e1fba77ce219fdaf32087ae53e857c4a496402978af26e78c/data' :
+        'community.wave.seqera.io/library/htslib_samtools:1.23.1--5b6bb4ede7e612e5' }"
 
     input:
     path unique_taxids
@@ -14,9 +14,8 @@ process MALT_PREPAREDB {
     output:
     path "seqid2taxid.project.map", emit: project_map
     path "seqids.project"         , emit: project
-    path "project.headers"        , emit: headers
     path "library.project.fna"    , emit: library
-    tuple val("${task.process}"), val('seqtk'), eval(" seqtk |& sed '3!d; s/.* //; s/-.*//' "), topic: versions, emit: versions_seqtk
+    tuple val("${task.process}"), val('samtools'), eval("samtools --version |& sed '1!d; s/samtools //'"), topic: versions, emit: versions_samtools
 
     when:
     task.ext.when == null || task.ext.when
@@ -26,12 +25,10 @@ process MALT_PREPAREDB {
     """
     grep -wFf $unique_taxids $seqid2taxid > seqid2taxid.project.map
     cut -f1 seqid2taxid.project.map > seqids.project
-    grep -Ff seqids.project $nt_fasta | sed 's/>//g' > project.headers
-    seqtk \\
-        subseq \\
+    samtools faidx \\
         $args \\
         $nt_fasta \\
-        project.headers \\
+        -r seqids.project \\
         > library.project.fna
     """
 
@@ -39,7 +36,6 @@ process MALT_PREPAREDB {
     """
     touch seqid2taxid.project.map
     touch seqids.project
-    touch project.headers
     touch library.project.fna
     """
 }

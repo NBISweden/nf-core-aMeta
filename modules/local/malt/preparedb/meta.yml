@@ -2,20 +2,21 @@ name: malt_preparedb
 description: |
   Prepares a project-specific FASTA database for MALT_BUILD by subsetting the
   full nucleotide FASTA to only the reference sequences whose taxon IDs were
-  detected by KrakenUniq. Uses seqtk subseq to extract sequences by header and
-  produces the seqid2taxid mapping required by MALT_BUILD.
+  detected by KrakenUniq. Uses samtools faidx to extract sequences by ID via
+  the FASTA's existing .fai index and produces the seqid2taxid mapping
+  required by MALT_BUILD.
 keywords:
   - malt
   - database
   - fasta
-  - seqtk
+  - samtools
   - metagenomics
   - ancient DNA
 tools:
-  - seqtk:
-      description: Toolkit for processing sequences in FASTA/FASTQ formats
-      homepage: https://github.com/lh3/seqtk
-      documentation: https://github.com/lh3/seqtk
+  - samtools:
+      description: Tools for dealing with SAM, BAM and CRAM files
+      homepage: http://www.htslib.org/
+      documentation: http://www.htslib.org/doc/samtools.html
       licence: ["MIT"]
       identifier: ""
 input:
@@ -48,12 +49,6 @@ output:
         type: file
         description: List of sequence IDs to extract from the full FASTA
         pattern: "seqids.project"
-        ontologies: []
-  headers:
-    - "project.headers":
-        type: file
-        description: FASTA headers for the project subset sequences
-        pattern: "project.headers"
         ontologies: []
   library_fasta:
     - "library.project.fna":
