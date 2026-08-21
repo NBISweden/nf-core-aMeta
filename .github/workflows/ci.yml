@@ -1,0 +1,49 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches:
+      - dev
+    paths-ignore:
+      - "docs/**"
+      - "**/meta.yml"
+      - "**/*.md"
+      - "**/*.png"
+      - "**/*.svg"
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+env:
+  NXF_ANSI_LOG: false
+
+jobs:
+  nf-test:
+    name: nf-test (ci)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out pipeline code
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          fetch-depth: 0
+
+      - name: Set up Nextflow
+        uses: nf-core/setup-nextflow@b4ec1bc7c16a94435159de94a05253542fddf6ef # v3
+        with:
+          version: "latest-stable"
+
+      - name: Set up Python
+        uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405 # v6
+        with:
+          python-version: "3.14"
+
+      - name: Set up nf-test
+        uses: nf-core/setup-nf-test@4069fbbaabe94c08faba4ad261bfa88225ba133f # v2
+        with:
+          version: "0.9.5"
+          install-pdiff: true
+
+      - name: Run nf-test (ci tag)
+        run: nf-test test --tag ci --profile +docker --ci
