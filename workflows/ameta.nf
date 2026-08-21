@@ -144,15 +144,24 @@ workflow AMETA {
 
     // Batch all samples of the same datatype (single/paired-end) into one process instance,
     // so the (very large) database is preloaded once per datatype rather than once per sample.
+    // Set params.krakenuniq_batch_samples = false to process each sample in its own process
+    // instance instead, avoiding shared-filesystem file locking on the last remaining files
+    // of a large batch on some clusters.
     ch_krakenuniq_batch = CUTADAPT.out.reads
         .map { meta, reads -> tuple(meta.single_end, meta, reads instanceof List ? reads : [reads]) }
-        .groupTuple(by: 0) // [ single_end, [meta, meta, ...], [reads, reads, ...] ]
-        .map { single_end, metas, reads -> tuple(single_end, metas, reads.flatten()) }
+    ch_krakenuniq_batch = params.krakenuniq_batch_samples.toBoolean()
+        ? ch_krakenuniq_batch
+            .groupTuple(by: 0) // [ single_end, [meta, meta, ...], [reads, reads, ...] ]
+            .map { single_end, metas, reads -> tuple(single_end, metas, reads.flatten()) }
+        : ch_krakenuniq_batch.map { single_end, meta, reads -> tuple(single_end, [meta], reads) }
     ch_krakenuniq_meta = ch_krakenuniq_batch.flatMap { _single_end, metas, _reads -> metas.collect{ meta -> [ meta.id, meta ] } }
     KRAKENUNIQ_PRELOADEDKRAKENUNIQ(
         ch_krakenuniq_batch.map { single_end, metas, reads ->
             tuple(
-                [ id: single_end ? 'krakenuniq_single_end' : 'krakenuniq_paired_end', single_end: single_end ],
+                [
+                    id: metas.size() == 1 ? metas[0].id : (single_end ? 'krakenuniq_single_end' : 'krakenuniq_paired_end'),
+                    single_end: single_end
+                ],
                 reads,
                 metas.collect{ it.id }
             )

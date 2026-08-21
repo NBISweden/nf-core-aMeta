@@ -117,6 +117,12 @@
                     "description": "Path to the KrakenUniq database directory.",
                     "fa_icon": "fas fa-folder"
                 },
+                "krakenuniq_batch_samples": {
+                    "type": "boolean",
+                    "default": true,
+                    "description": "Batch all samples of a datatype (single/paired-end) into one KrakenUniq process instance so the database is preloaded once. Set to false to process each sample in its own process instance, e.g. to avoid shared-filesystem file locking on the last remaining files of a large batch on some clusters.",
+                    "fa_icon": "fas fa-layer-group"
+                },
                 "pathogenomes_found": {
                     "type": "string",
                     "format": "file-path",
