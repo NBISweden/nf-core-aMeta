@@ -78,7 +78,8 @@
                         "git_sha": "70a5a677f10ea745e43e0f6c4bb15a2fb3cc7892",
                         "installed_by": [
                             "modules"
-                        ]
+                        ],
+                        "patch": "modules/nf-core/malt/run/malt-run.diff"
                     },
                     "maltextract": {
                         "branch": "master",

@@ -25,6 +25,7 @@ process MALT_RUN {
     def prefix = task.ext.prefix ?: "${meta.id}"
     """
     malt-run \\
+        -J-Xmx${task.memory.toGiga()}G \\
         -t ${task.cpus} \\
         -v \\
         -o . \\
