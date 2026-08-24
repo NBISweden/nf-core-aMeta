@@ -14,17 +14,17 @@
 
 ## Introduction
 
-**NBISweden/ameta** is a bioinformatics pipeline that ...
+**NBISweden/ameta** is a bioinformatics pipeline for identifying and authenticating microbial sequences in ancient DNA shotgun metagenomics samples. It is a [Nextflow](https://www.nextflow.io)/nf-core reimplementation of the original Snakemake workflow [NBISweden/aMeta](https://github.com/NBISweden/aMeta), described in Pochon, Bergfeldt et al., *Genome Biology* 2023 ([doi:10.1186/s13059-023-03083-9](https://doi.org/10.1186/s13059-023-03083-9)).
 
-<!-- TODO nf-core:
-   Complete this sentence with a 2-3 sentence summary of what types of data the pipeline ingests, a brief overview of the
-   major pipeline sections and the types of output it produces. You're giving an overview to someone new
-   to nf-core here, in 15-20 seconds. For an example, see https://github.com/nf-core/rnaseq/blob/master/README.md#introduction
--->
+Starting from shotgun sequencing reads, the pipeline:
 
-<!-- TODO nf-core: Include a figure that guides the user through the major workflow steps. Many nf-core
-     workflows use the "tube map" design for that. See https://nf-co.re/docs/community/brand/workflow-schematics#examples for examples.   -->
-<!-- TODO nf-core: Fill in short bullet-pointed list of the default steps in the pipeline -->1. Read QC ([`FastQC`](https://www.bioinformatics.babraham.ac.uk/projects/fastqc/))2. Present QC for raw reads ([`MultiQC`](http://multiqc.info/))
+1. Trims adapters and filters short reads with [Cutadapt](https://cutadapt.readthedocs.io/), with QC before and after trimming via [FastQC](https://www.bioinformatics.babraham.ac.uk/projects/fastqc/) and [MultiQC](http://multiqc.info/)
+2. Performs k-mer-based taxonomic classification with [KrakenUniq](https://github.com/fbreitwieser/krakenuniq) and screens for common microbial pathogens
+3. Aligns reads with [Bowtie2](https://bowtie-bio.sourceforge.net/bowtie2/) and profiles deamination patterns with [mapDamage2](https://ginolhac.github.io/mapDamage/)
+4. Performs Lowest Common Ancestor (LCA) alignment with [MALT](https://software-ab.cs.uni-tuebingen.de/download/malt/)
+5. Authenticates and validates candidate ancient microbial species with [MaltExtract](https://github.com/rhuebler/HOPS)
+
+Each of these analysis stages beyond the initial QC/classification (MapDamage2, the full MALT/authentication pipeline, and Krona taxonomy plots) can be individually toggled on or off. The output includes per-sample, per-species authentication scores and diagnostic plots (deamination profile, coverage evenness, read length distribution, PMD scores, and more), alongside abundance matrices from both KrakenUniq and MALT.
 
 ## Usage
 
