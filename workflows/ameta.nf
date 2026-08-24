@@ -268,14 +268,17 @@ workflow AMETA {
     // SUBWORKFLOW: authentic
     if (params.run_authentication.toBoolean()) {
         // Rule: Create_Sample_TaxID_Directories, however taxid is added to meta data instead
-        def ch_species_with_taxid = KRAKENUNIQ_FILTER.out.species_tax_id
-            .flatMap{ meta, taxids -> taxids.splitCsv(header: false, sep: '\t').collect{ row -> meta + [ taxid: row.head() ] } }
+        def ch_species_with_taxids = KRAKENUNIQ_FILTER.out.species_tax_id
+            .map{ meta, taxids -> [ meta, taxids.splitCsv(header: false, sep: '\t').collect{ row -> row.head() } ] }
+            .filter{ _meta, taxids -> taxids }
         MAKENODELIST (
-            ch_species_with_taxid,
+            ch_species_with_taxids,
             ch_krakenuniq_db // Contains the taxDB
         )
+        def ch_node_list = MAKENODELIST.out.node_lists
+            .flatMap{ meta, node_lists -> node_lists.collect{ node_list -> [ meta + [ taxid: (node_list.name - '.node_list.txt') ], node_list ] } }
         def ch_maltextract = ch_malt_rma6.combine(
-            MAKENODELIST.out.node_list
+            ch_node_list
                 .map{ meta, node_list -> [ meta.subMap(meta.keySet() - 'taxid'), meta.taxid, node_list ] },
             by: 0
         )
@@ -294,7 +297,7 @@ workflow AMETA {
         def ch_maltextract_valid = MALTEXTRACT.out.results
             .join( MALTEXTRACT.out.ref_id )
             .map { meta, results, ref_id -> [ meta, results ] }
-        POSTPROCESSINGAMPS( MAKENODELIST.out.node_list.join(ch_maltextract_valid) )
+        POSTPROCESSINGAMPS( ch_node_list.join(ch_maltextract_valid) )
         def ch_alignments_per_taxid = ch_malt_alignments
             .combine(
                 ch_maltextract_valid
@@ -316,7 +319,7 @@ workflow AMETA {
         PMDTOOLS_SCORE ( BREADTHOFCOVERAGE.out.sorted_bam )
         PMDTOOLS_DEAMINATION ( BREADTHOFCOVERAGE.out.sorted_bam )
         AUTHENTICATIONPLOTS (
-            MAKENODELIST.out.node_list
+            ch_node_list
                 .join( READLENGTHDISTRIBUTION.out.read_length )
                 .join( PMDTOOLS_SCORE.out.pmd_scores )
                 .join( BREADTHOFCOVERAGE.out.breadth_of_coverage )
@@ -329,7 +332,7 @@ workflow AMETA {
                     .join( BREADTHOFCOVERAGE.out.name_list )
                     .join( BREADTHOFCOVERAGE.out.breadth_of_coverage )
                     .join( READLENGTHDISTRIBUTION.out.read_length )
-                    .join( MAKENODELIST.out.node_list )
+                    .join( ch_node_list )
                     .join( PMDTOOLS_SCORE.out.pmd_scores )
                     .map{ meta, maltex_dir, name_list, breadth, read_length, node_list, pmd -> [ meta - meta.subMap('taxid'), meta.taxid, maltex_dir, name_list, node_list, pmd, breadth, read_length ] },
                 by: 0

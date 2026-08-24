@@ -8,7 +8,7 @@ process POSTPROCESSINGAMPS {
         'biocontainers/hops:0.35--hdfd78af_1' }"
 
     input:
-    tuple val(meta), path(node_list), path(malt_extract)
+    tuple val(meta), path(node_list, stageAs: 'node_list.txt'), path(malt_extract)
 
     output:
     tuple val(meta), path("$malt_extract/analysis.RData")            , emit: rdata

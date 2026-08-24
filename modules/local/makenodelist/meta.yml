@@ -1,8 +1,9 @@
 name: makenodelist
 description: |
-  Extracts the species name for a given taxonomic identifier from the KrakenUniq
-  taxDB file using gawk. The output node_list.txt is required by MaltExtract and
-  the authentication plotting scripts to identify the target organism.
+  Extracts the species name for each of a sample's candidate taxonomic
+  identifiers from the KrakenUniq taxDB file using gawk, in a single pass per
+  sample. The output node_list.txt files are required by MaltExtract and
+  the authentication plotting scripts to identify the target organisms.
 keywords:
   - taxonomy
   - taxid
@@ -21,24 +22,27 @@ input:
   - meta:
       type: map
       description: |
-        Groovy Map containing sample and taxon information.
-        Must include `taxid` key, e.g. [ id:'sample1', taxid:'1234' ]
+        Groovy Map containing sample information, e.g. [ id:'sample1' ]
+  - taxids:
+      type: list
+      description: List of candidate taxonomic identifiers for the sample
   - taxdb_dir:
       type: directory
       description: KrakenUniq database directory containing the taxDB file
       pattern: "*/"
       ontologies: []
 output:
-  node_list:
+  node_lists:
     - - meta:
           type: map
-          description: Groovy Map containing sample and taxon information
-      - node_list.txt:
+          description: Groovy Map containing sample information
+      - "*.node_list.txt":
           type: file
           description: |
-            Text file containing the species name(s) for the given taxon ID,
-            one per line. Used as input to MaltExtract and authentication scripts.
-          pattern: "node_list.txt"
+            One file per requested taxon ID, named "<taxid>.node_list.txt",
+            containing the species name(s) for that taxon ID, one per line.
+            Used as input to MaltExtract and authentication scripts.
+          pattern: "*.node_list.txt"
           ontologies: []
 authors:
   - "@mahesh-panchal"
