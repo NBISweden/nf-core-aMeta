@@ -3,6 +3,10 @@
 work/
 .lineage/
 
+# nf-test
+.nf-test/
+.nf-test.log
+
 # nf-core
 null/
 data/
