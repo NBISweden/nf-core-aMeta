@@ -1,4 +1,4 @@
-# aMeta nf-core: faithfulness to the Snakemake original
+# nf-core-aMeta: faithfulness to the Snakemake original
 
 The nf-core Nextflow pipeline is a scientifically faithful reproduction of Snakemake aMeta.
 All tool choices, databases, filtering thresholds, and analytical flags match the original.

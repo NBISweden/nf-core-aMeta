@@ -1,7 +1,7 @@
 {
     "$schema": "https://json-schema.org/draft/2020-12/schema",
-    "$id": "https://raw.githubusercontent.com/NBISweden/ameta/master/nextflow_schema.json",
-    "title": "NBISweden/ameta pipeline parameters",
+    "$id": "https://raw.githubusercontent.com/NBISweden/nf-core-aMeta/master/nextflow_schema.json",
+    "title": "NBISweden/nf-core-aMeta pipeline parameters",
     "description": "An nf-core compliant version of aMeta; An ancient metagenomic profiling Snakemake workflow",
     "type": "object",
     "$defs": {

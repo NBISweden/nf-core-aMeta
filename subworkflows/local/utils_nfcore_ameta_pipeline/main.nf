@@ -1,5 +1,5 @@
 //
-// Subworkflow with functionality specific to the NBISweden/ameta pipeline
+// Subworkflow with functionality specific to the NBISweden/nf-core-aMeta pipeline
 //
 
 /*

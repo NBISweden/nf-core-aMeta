@@ -1,4 +1,4 @@
-# NBISweden/ameta: Citations
+# NBISweden/nf-core-aMeta: Citations
 
 ## [nf-core](https://pubmed.ncbi.nlm.nih.gov/32055031/)
 

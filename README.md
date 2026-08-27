@@ -1,8 +1,8 @@
-# NBISweden/ameta
+# NBISweden/nf-core-aMeta
 
-[![Open in GitHub Codespaces](https://img.shields.io/badge/Open_In_GitHub_Codespaces-black?labelColor=grey&logo=github)](https://github.com/codespaces/new/NBISweden/ameta)
-[![GitHub Actions CI Status](https://github.com/NBISweden/ameta/actions/workflows/nf-test.yml/badge.svg)](https://github.com/NBISweden/ameta/actions/workflows/nf-test.yml)
-[![GitHub Actions Linting Status](https://github.com/NBISweden/ameta/actions/workflows/linting.yml/badge.svg)](https://github.com/NBISweden/ameta/actions/workflows/linting.yml)[![Cite with Zenodo](http://img.shields.io/badge/DOI-10.5281/zenodo.XXXXXXX-1073c8?labelColor=000000)](https://doi.org/10.5281/zenodo.XXXXXXX)
+[![Open in GitHub Codespaces](https://img.shields.io/badge/Open_In_GitHub_Codespaces-black?labelColor=grey&logo=github)](https://github.com/codespaces/new/NBISweden/nf-core-aMeta)
+[![GitHub Actions CI Status](https://github.com/NBISweden/nf-core-aMeta/actions/workflows/nf-test.yml/badge.svg)](https://github.com/NBISweden/nf-core-aMeta/actions/workflows/nf-test.yml)
+[![GitHub Actions Linting Status](https://github.com/NBISweden/nf-core-aMeta/actions/workflows/linting.yml/badge.svg)](https://github.com/NBISweden/nf-core-aMeta/actions/workflows/linting.yml)[![Cite with Zenodo](http://img.shields.io/badge/DOI-10.5281/zenodo.XXXXXXX-1073c8?labelColor=000000)](https://doi.org/10.5281/zenodo.XXXXXXX)
 [![nf-test](https://img.shields.io/badge/unit_tests-nf--test-337ab7.svg)](https://www.nf-test.com)
 
 [![Nextflow](https://img.shields.io/badge/version-%E2%89%A526.4.0-green?style=flat&logo=nextflow&logoColor=white&color=%230DC09D&link=https%3A%2F%2Fnextflow.io)](https://www.nextflow.io/)
@@ -10,11 +10,11 @@
 [![run with conda](http://img.shields.io/badge/run%20with-conda-3EB049?labelColor=000000&logo=anaconda)](https://docs.conda.io/en/latest/)
 [![run with docker](https://img.shields.io/badge/run%20with-docker-0db7ed?labelColor=000000&logo=docker)](https://www.docker.com/)
 [![run with singularity](https://img.shields.io/badge/run%20with-singularity-1d355c.svg?labelColor=000000)](https://sylabs.io/docs/)
-[![Launch on Seqera Platform](https://img.shields.io/badge/Launch%20%F0%9F%9A%80-Seqera%20Platform-%234256e7)](https://cloud.seqera.io/launch?pipeline=https://github.com/NBISweden/ameta)
+[![Launch on Seqera Platform](https://img.shields.io/badge/Launch%20%F0%9F%9A%80-Seqera%20Platform-%234256e7)](https://cloud.seqera.io/launch?pipeline=https://github.com/NBISweden/nf-core-aMeta)
 
 ## Introduction
 
-**NBISweden/ameta** is a bioinformatics pipeline for identifying and authenticating microbial sequences in ancient DNA shotgun metagenomics samples. It is a [Nextflow](https://www.nextflow.io)/nf-core reimplementation of the original Snakemake workflow [NBISweden/aMeta](https://github.com/NBISweden/aMeta), described in Pochon, Bergfeldt et al., *Genome Biology* 2023 ([doi:10.1186/s13059-023-03083-9](https://doi.org/10.1186/s13059-023-03083-9)).
+**NBISweden/nf-core-aMeta** is a bioinformatics pipeline for identifying and authenticating microbial sequences in ancient DNA shotgun metagenomics samples. It is a [Nextflow](https://www.nextflow.io)/nf-core reimplementation of the original Snakemake workflow [aMeta](https://github.com/NBISweden/aMeta), described in Pochon, Bergfeldt et al., *Genome Biology* 2023 ([doi:10.1186/s13059-023-03083-9](https://doi.org/10.1186/s13059-023-03083-9)).
 
 Starting from shotgun sequencing reads, the pipeline:
 
@@ -52,7 +52,7 @@ Now, you can run the pipeline using:
 <!-- TODO nf-core: update the following command to include all required parameters for a minimal example -->
 
 ```bash
-nextflow run NBISweden/ameta \
+nextflow run NBISweden/nf-core-aMeta \
    -profile <docker/singularity/.../institute> \
    --input samplesheet.csv \
    --outdir <OUTDIR>
@@ -63,7 +63,7 @@ nextflow run NBISweden/ameta \
 
 ## Credits
 
-NBISweden/ameta was originally written by Mahesh Binzer-Panchal.
+NBISweden/nf-core-aMeta was originally written by Mahesh Binzer-Panchal, based on the original [aMeta](https://github.com/NBISweden/aMeta) Snakemake pipeline written by Zoé Pochon.
 
 We thank the following people for their extensive assistance in the development of this pipeline:
 
@@ -76,7 +76,7 @@ If you would like to contribute to this pipeline, please see the [contributing g
 ## Citations
 
 <!-- TODO nf-core: Add citation for pipeline after first release. Uncomment lines below and update Zenodo doi and badge at the top of this file. -->
-<!-- If you use NBISweden/ameta for your analysis, please cite it using the following doi: [10.5281/zenodo.XXXXXX](https://doi.org/10.5281/zenodo.XXXXXX) -->
+<!-- If you use NBISweden/nf-core-aMeta for your analysis, please cite it using the following doi: [10.5281/zenodo.XXXXXX](https://doi.org/10.5281/zenodo.XXXXXX) -->
 
 <!-- TODO nf-core: Add bibliography of tools and data used in your pipeline -->
 

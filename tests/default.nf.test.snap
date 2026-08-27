@@ -121,7 +121,7 @@
                     "samtools": "1.23.1"
                 },
                 "Workflow": {
-                    "NBISweden/ameta": "v1.0.0dev"
+                    "NBISweden/nf-core-aMeta": "v1.0.0dev"
                 }
             },
             [

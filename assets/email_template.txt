@@ -1,10 +1,10 @@
 Run Name: $runName
 
 <% if (success){
-    out << "## NBISweden/ameta execution completed successfully! ##"
+    out << "## NBISweden/nf-core-aMeta execution completed successfully! ##"
 } else {
     out << """####################################################
-## NBISweden/ameta execution completed unsuccessfully! ##
+## NBISweden/nf-core-aMeta execution completed unsuccessfully! ##
 ####################################################
 The exit status of the task that caused the workflow execution to fail was: $exitStatus.
 The full error message was:
@@ -27,5 +27,5 @@ Pipeline Configuration:
 <% out << summary.collect{ k,v -> " - $k: $v" }.join("\n") %>
 
 --
-NBISweden/ameta
-https://github.com/NBISweden/ameta
+NBISweden/nf-core-aMeta
+https://github.com/NBISweden/nf-core-aMeta

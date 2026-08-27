@@ -1,4 +1,4 @@
-# NBISweden/ameta: Output
+# NBISweden/nf-core-aMeta: Output
 
 ## Introduction
 

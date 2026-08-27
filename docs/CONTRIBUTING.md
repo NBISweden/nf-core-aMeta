@@ -3,15 +3,15 @@ title: Contributing
 markdownPlugin: checklist
 ---
 
-# `NBISweden/ameta`: Contributing guidelines
+# `NBISweden/nf-core-aMeta`: Contributing guidelines
 
 Hi there!
-Thanks for taking an interest in improving NBISweden/ameta.
+Thanks for taking an interest in improving NBISweden/nf-core-aMeta.
 
-This page describes the recommended nf-core way to contribute to both NBISweden/ameta and nf-core pipelines in general, including:
+This page describes the recommended nf-core way to contribute to both NBISweden/nf-core-aMeta and nf-core pipelines in general, including:
 
 - [General contribution guidelines](#general-contribution-guidelines): common procedures or guides across all nf-core pipelines.
-- [Pipeline-specific contribution guidelines](#pipeline-specific-contribution-guidelines): procedures or guides specific to the development conventions of NBISweden/ameta.
+- [Pipeline-specific contribution guidelines](#pipeline-specific-contribution-guidelines): procedures or guides specific to the development conventions of NBISweden/nf-core-aMeta.
 
 ## General contribution guidelines
 
@@ -20,8 +20,8 @@ This page describes the recommended nf-core way to contribute to both NBISweden/
 To contribute code to any nf-core pipeline:
 
 - [ ] Ensure you have Nextflow, nf-core tools, and nf-test installed. See the [nf-core/tools repository](https://github.com/nf-core/tools) for instructions.
-- [ ] Check whether a GitHub [issue](https://github.com/NBISweden/ameta/issues) about your idea already exists. If an issue does not exist, create one so that others are aware you are working on it.
-- [ ] [Fork](https://help.github.com/en/github/getting-started-with-github/fork-a-repo) the [NBISweden/ameta repository](https://github.com/NBISweden/ameta) to your GitHub account.
+- [ ] Check whether a GitHub [issue](https://github.com/NBISweden/nf-core-aMeta/issues) about your idea already exists. If an issue does not exist, create one so that others are aware you are working on it.
+- [ ] [Fork](https://help.github.com/en/github/getting-started-with-github/fork-a-repo) the [NBISweden/nf-core-aMeta repository](https://github.com/NBISweden/nf-core-aMeta) to your GitHub account.
 - [ ] Create a branch on your forked repository and make your changes following [pipeline conventions](#pipeline-contribution-conventions) (if applicable).
 - [ ] To fix major bugs, name your branch `patch` and follow the [patch release](#patch-release) process.
 - [ ] Update relevant documentation within the `docs/` folder, use nf-core/tools to update `nextflow_schema.json`, and update `CITATIONS.md`.
@@ -33,13 +33,13 @@ If you are not used to this workflow with Git, see the [GitHub documentation](ht
 
 ### GitHub Codespaces
 
-You can contribute to NBISweden/ameta without installing a local development environment on your machine by using [GitHub Codespaces](https://github.com/codespaces).
+You can contribute to NBISweden/nf-core-aMeta without installing a local development environment on your machine by using [GitHub Codespaces](https://github.com/codespaces).
 
 [GitHub Codespaces](https://github.com/codespaces) is an online developer environment that runs in your browser, complete with VS Code and a terminal.
 Most nf-core repositories include a devcontainer configuration, which creates a GitHub Codespaces environment specifically for Nextflow development.
 The environment includes pre-installed nf-core tools, Nextflow, and a few other helpful utilities via a Docker container.
 
-To get started, open the repository in [Codespaces](https://github.com/NBISweden/ameta/codespaces).
+To get started, open the repository in [Codespaces](https://github.com/NBISweden/nf-core-aMeta/codespaces).
 
 ### Testing
 
@@ -92,7 +92,7 @@ These tests are run with the latest available version of Nextflow and the minimu
 
 ### Pipeline contribution conventions
 
-nf-core semi-standardises how you write code and other contributions to make the NBISweden/ameta code and processing logic more understandable for new contributors and to ensure quality.
+nf-core semi-standardises how you write code and other contributions to make the NBISweden/nf-core-aMeta code and processing logic more understandable for new contributors and to ensure quality.
 
 #### Add a new pipeline step
 
