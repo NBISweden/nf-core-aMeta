@@ -1,0 +1,43 @@
+Changes in component 'nf-core/krakenuniq/preloadedkrakenuniq'
+'modules/nf-core/krakenuniq/preloadedkrakenuniq/environment.yml' is unchanged
+'modules/nf-core/krakenuniq/preloadedkrakenuniq/meta.yml' is unchanged
+Changes in 'krakenuniq/preloadedkrakenuniq/main.nf':
+--- modules/nf-core/krakenuniq/preloadedkrakenuniq/main.nf
++++ modules/nf-core/krakenuniq/preloadedkrakenuniq/main.nf
+@@ -62,6 +62,7 @@
+             krakenuniq \\
+                 --db ${db} \\
+                 --threads ${task.cpus} \\
++                ${args} \\
+                 ${report} \\
+                 ${output_option} \\
+                 ${unclassified_option} \\
+@@ -90,6 +91,7 @@
+             krakenuniq \\
+                 --db ${db} \\
+                 --threads ${task.cpus} \\
++                ${args} \\
+                 ${report} \\
+                 ${output_option} \\
+                 ${unclassified_option} \\
+@@ -146,6 +148,7 @@
+             echo krakenuniq \\
+                 --db ${db} \\
+                 --threads ${task.cpus} \\
++                ${args} \\
+                 ${report} \\
+                 ${output_option} \\
+                 ${unclassified_option} \\
+@@ -187,6 +190,7 @@
+             echo krakenuniq \\
+                 --db ${db} \\
+                 --threads ${task.cpus} \\
++                ${args} \\
+                 ${report} \\
+                 ${output_option} \\
+                 ${unclassified_option} \\
+
+'modules/nf-core/krakenuniq/preloadedkrakenuniq/tests/main.nf.test.snap' is unchanged
+'modules/nf-core/krakenuniq/preloadedkrakenuniq/tests/nextflow.config' is unchanged
+'modules/nf-core/krakenuniq/preloadedkrakenuniq/tests/main.nf.test' is unchanged
+************************************************************

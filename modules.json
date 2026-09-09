@@ -35,7 +35,8 @@
                     "krakenuniq/preloadedkrakenuniq": {
                         "branch": "master",
                         "git_sha": "53c5d14fe7173a1fee9973dcba5cf79164760770",
-                        "installed_by": ["modules"]
+                        "installed_by": ["modules"],
+                        "patch": "modules/nf-core/krakenuniq/preloadedkrakenuniq/krakenuniq-preloadedkrakenuniq.diff"
                     },
                     "krona/ktimporttaxonomy": {
                         "branch": "master",
