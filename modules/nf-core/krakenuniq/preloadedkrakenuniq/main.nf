@@ -62,6 +62,7 @@ process KRAKENUNIQ_PRELOADEDKRAKENUNIQ {
             krakenuniq \\
                 --db ${db} \\
                 --threads ${task.cpus} \\
+                ${args} \\
                 ${report} \\
                 ${output_option} \\
                 ${unclassified_option} \\
@@ -90,6 +91,7 @@ process KRAKENUNIQ_PRELOADEDKRAKENUNIQ {
             krakenuniq \\
                 --db ${db} \\
                 --threads ${task.cpus} \\
+                ${args} \\
                 ${report} \\
                 ${output_option} \\
                 ${unclassified_option} \\
@@ -146,6 +148,7 @@ process KRAKENUNIQ_PRELOADEDKRAKENUNIQ {
             echo krakenuniq \\
                 --db ${db} \\
                 --threads ${task.cpus} \\
+                ${args} \\
                 ${report} \\
                 ${output_option} \\
                 ${unclassified_option} \\
@@ -187,6 +190,7 @@ process KRAKENUNIQ_PRELOADEDKRAKENUNIQ {
             echo krakenuniq \\
                 --db ${db} \\
                 --threads ${task.cpus} \\
+                ${args} \\
                 ${report} \\
                 ${output_option} \\
                 ${unclassified_option} \\
